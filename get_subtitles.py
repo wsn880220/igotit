@@ -1,0 +1,158 @@
+#!/usr/bin/env python3
+"""
+使用 yt-dlp 获取 YouTube 字幕并转换为 JSON 格式
+"""
+import sys
+import json
+import subprocess
+import os
+import tempfile
+
+def get_subtitles(video_id):
+    """获取 YouTube 视频的英文字幕"""
+    url = f"https://www.youtube.com/watch?v={video_id}"
+    
+    # 获取脚本所在目录
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    venv_ytdlp = os.path.join(script_dir, 'venv', 'bin', 'yt-dlp')
+    
+    # 创建临时目录
+    temp_dir = tempfile.mkdtemp()
+    output_template = os.path.join(temp_dir, "subtitle")
+    
+    try:
+        # 使用 yt-dlp 下载字幕
+        # 修改为支持所有英文变体：en, en-US, en-GB, en-AU等
+        cmd = [
+            venv_ytdlp,
+            "--write-auto-subs",
+            "--write-subs",
+            "--sub-langs", "en.*",  # 使用通配符匹配所有英文字幕
+            "--skip-download",
+            "--sub-format", "vtt",
+            "-o", output_template,
+            url
+        ]
+        
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        
+        # 查找生成的 VTT 文件
+        vtt_file = f"{output_template}.en.vtt"
+        if not os.path.exists(vtt_file):
+            # 尝试其他可能的文件名
+            for file in os.listdir(temp_dir):
+                if file.endswith(".vtt") and "en" in file:
+                    vtt_file = os.path.join(temp_dir, file)
+                    break
+        
+        if not os.path.exists(vtt_file):
+            print(json.dumps({"error": "没有找到英文字幕"}))
+            return
+        
+        # 解析 VTT 文件
+        subtitles = parse_vtt(vtt_file)
+        
+        # 输出 JSON
+        print(json.dumps({
+            "videoId": video_id,
+            "subtitles": subtitles
+        }))
+        
+    except subprocess.TimeoutExpired:
+        print(json.dumps({"error": "请求超时"}))
+    except Exception as e:
+        print(json.dumps({"error": str(e)}))
+    finally:
+        # 清理临时文件
+        try:
+            for file in os.listdir(temp_dir):
+                os.remove(os.path.join(temp_dir, file))
+            os.rmdir(temp_dir)
+        except:
+            pass
+
+def parse_vtt(vtt_file):
+    """解析 VTT 字幕文件"""
+    subtitles = []
+    
+    with open(vtt_file, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+    
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
+        
+        # 跳过 WEBVTT 头和空行
+        if line.startswith('WEBVTT') or line.startswith('NOTE') or not line:
+            i += 1
+            continue
+        
+        # 检查是否是时间戳行
+        if '-->' in line:
+            # 解析时间戳
+            time_parts = line.split('-->')
+            start_time = parse_timestamp(time_parts[0].strip())
+            end_time = parse_timestamp(time_parts[1].strip().split()[0])
+            
+            # 获取字幕文本（可能有多行）
+            text_lines = []
+            i += 1
+            while i < len(lines) and lines[i].strip() and '-->' not in lines[i]:
+                text_lines.append(lines[i].strip())
+                i += 1
+            
+            if text_lines:
+                text = ' '.join(text_lines)
+                # 移除 VTT 标签
+                text = remove_vtt_tags(text)
+                
+                subtitles.append({
+                    "text": text,
+                    "start": start_time,
+                    "duration": end_time - start_time
+                })
+        else:
+            i += 1
+    
+    return subtitles
+
+def parse_timestamp(timestamp):
+    """将 VTT 时间戳转换为秒"""
+    # 格式: HH:MM:SS.mmm 或 MM:SS.mmm
+    parts = timestamp.strip().split(':')
+    
+    if len(parts) == 3:
+        hours, minutes, seconds = parts
+        total = float(hours) * 3600 + float(minutes) * 60 + float(seconds)
+    elif len(parts) == 2:
+        minutes, seconds = parts
+        total = float(minutes) * 60 + float(seconds)
+    else:
+        total = float(parts[0])
+    
+    return round(total, 3)
+
+def remove_vtt_tags(text):
+    """移除 VTT 格式标签"""
+    import re
+    # 移除 <c>, <v>, <i>, <b>, <u> 等标签
+    text = re.sub(r'<[^>]+>', '', text)
+    # 移除 &nbsp; 等 HTML 实体
+    text = text.replace('&nbsp;', ' ')
+    text = text.replace('&amp;', '&')
+    text = text.replace('&lt;', '<')
+    text = text.replace('&gt;', '>')
+    return text.strip()
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print(json.dumps({"error": "需要提供视频 ID"}))
+        sys.exit(1)
+    
+    video_id = sys.argv[1]
+    get_subtitles(video_id)

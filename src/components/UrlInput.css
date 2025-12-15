@@ -1,0 +1,129 @@
+.url-input-container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.url-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.input-wrapper {
+    display: flex;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-xs);
+    background: var(--bg-glass);
+    backdrop-filter: blur(12px);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.input-wrapper:focus-within {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px hsla(280, 80%, 60%, 0.1);
+}
+
+.url-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: var(--spacing-sm) var(--spacing-md);
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.url-input::placeholder {
+    color: var(--text-muted);
+}
+
+.url-input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.submit-button {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: var(--accent-gradient);
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+}
+
+.submit-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.submit-button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.loading-spinner {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.error-message {
+    margin-top: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: hsla(0, 70%, 50%, 0.1);
+    border: 1px solid hsla(0, 70%, 50%, 0.3);
+    border-radius: var(--radius-md);
+    color: hsl(0, 70%, 65%);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: 0.95rem;
+}
+
+.demo-button {
+    width: 100%;
+    padding: var(--spacing-sm);
+    background: linear-gradient(135deg, hsla(150, 70%, 50%, 0.2), hsla(200, 70%, 50%, 0.2));
+    border: 1px solid hsla(150, 70%, 50%, 0.4);
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-radius: var(--radius-md);
+    transition: all 0.3s ease;
+}
+
+.demo-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, hsla(150, 70%, 50%, 0.3), hsla(200, 70%, 50%, 0.3));
+    border-color: hsla(150, 70%, 50%, 0.6);
+    transform: translateY(-1px);
+}
+
+.error-icon {
+    font-size: 1.2rem;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    .input-wrapper {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    .submit-button {
+        width: 100%;
+    }
+}

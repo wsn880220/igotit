@@ -1,0 +1,137 @@
+.word-wrapper {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0.1rem 0.15rem;
+    vertical-align: top;
+}
+
+.subtitle-word {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0.2rem 0.4rem;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    display: inline-block;
+}
+
+.subtitle-word:hover {
+    background: var(--bg-hover);
+    color: var(--accent-secondary);
+    transform: scale(1.05);
+}
+
+.subtitle-word.highlighted {
+    background: var(--highlight-bg);
+    color: var(--highlight-text);
+    font-weight: 600;
+    animation: highlightPulse 0.5s ease;
+}
+
+@keyframes highlightPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.08);
+    }
+}
+
+.word-translation {
+    margin-top: 0.3rem;
+    padding: 0.5rem 0.7rem;
+    background: var(--translation-bg);
+    color: var(--translation-text);
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    font-weight: 500;
+    box-shadow: var(--shadow-md);
+    animation: fadeIn 0.3s ease;
+    min-width: fit-content;
+    max-width: 300px;
+}
+
+.main-translation {
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.expand-icon {
+    font-size: 0.7rem;
+    color: var(--accent-secondary);
+    opacity: 0.7;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.expand-icon.expanded {
+    opacity: 1;
+}
+
+.word-translation.expandable {
+    cursor: pointer;
+}
+
+.word-translation.expandable:hover .expand-icon {
+    opacity: 1;
+    transform: translateX(2px);
+}
+
+.alternatives-list {
+    margin-top: 0.5rem;
+    padding: 0.8rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-md);
+    max-width: 400px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+.alternative-item {
+    padding: 0.5rem;
+    margin: 0.3rem 0;
+    border-radius: var(--radius-sm);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+
+
+.part-of-speech {
+    color: var(--accent-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+    text-transform: uppercase;
+}
+
+.alternative-translation {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.85rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    line-height: 1.4;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    .subtitle-word {
+        padding: 0.15rem 0.25rem;
+    }
+
+    .word-translation {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.6rem;
+        max-width: 250px;
+    }
+}

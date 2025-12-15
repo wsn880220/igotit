@@ -1,0 +1,26 @@
+{
+  "name": "igotit-server",
+  "version": "1.0.0",
+  "description": "YouTube subtitle extraction and translation API server",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "youtube",
+    "subtitles",
+    "translation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@google-cloud/translate": "^9.3.0",
+    "@vitalets/google-translate-api": "^9.2.0",
+    "better-sqlite3": "^12.5.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.18.2"
+  }
+}
