@@ -42,25 +42,28 @@
 
 .word-translation {
     margin-top: 0.3rem;
-    padding: 0.5rem 0.7rem;
+    padding: 0.6rem 0.8rem;
     background: var(--translation-bg);
     color: var(--translation-text);
     border-radius: var(--radius-md);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 500;
     box-shadow: var(--shadow-md);
     animation: fadeIn 0.3s ease;
     min-width: fit-content;
     max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .main-translation {
     font-weight: 600;
-    margin-bottom: 0.4rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
+    line-height: 1.5;
 }
 
 .expand-icon {

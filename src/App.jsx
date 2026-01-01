@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useVideoPlayer } from './hooks/useVideoPlayer';
 import UrlInput from './components/UrlInput';
 import VideoPlayer from './components/VideoPlayer';
 import SubtitlePanel from './components/SubtitlePanel';
@@ -9,15 +10,21 @@ function App() {
     const [videoUrl, setVideoUrl] = useState('');
     const [videoId, setVideoId] = useState(null);
     const [subtitles, setSubtitles] = useState([]);
-    const [currentTime, setCurrentTime] = useState(0);
+
+    // Use custom hook for video player logic
+    const {
+        videoPlayerRef,
+        currentTime,
+        handleTimeUpdate,
+        handleSeek
+    } = useVideoPlayer();
+
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [translations, setTranslations] = useState({});
     const [sentenceTranslations, setSentenceTranslations] = useState({}); // 句子翻译
     const [showVideo, setShowVideo] = useState(true);
     const [pauseOnTranslate, setPauseOnTranslate] = useState(true); // 翻译时是否暂停
-
-    const videoPlayerRef = useRef(null); // 视频播放器引用
 
     // 处理 URL 提交
     const handleUrlSubmit = async (url) => {
@@ -52,29 +59,55 @@ function App() {
         }
     };
 
-    // 处理视频时间更新
-    const handleTimeUpdate = (time) => {
-        setCurrentTime(time);
-    };
+    // 移除 localStorage 缓存逻辑，实现刷新即焚
 
-    // 处理视频跳转
-    const handleSeek = (time) => {
-        if (videoPlayerRef.current) {
-            videoPlayerRef.current.seekTo(time, true);
+    // 清除缓存（测试用）
+    const handleClearCache = async () => {
+        if (!videoId) {
+            alert('请先获取视频字幕');
+            return;
+        }
+
+        if (!confirm(`确定要清除视频 ${videoId} 的所有缓存吗？`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/clear-cache', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ videoId }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert(data.message);
+                // 清除前端翻译缓存
+                setTranslations({});
+                console.log('✅ 缓存已清除');
+            } else {
+                alert(`清除失败: ${data.error}`);
+            }
+        } catch (err) {
+            console.error('清除缓存失败:', err);
+            alert('清除缓存失败');
         }
     };
 
-    // 移除 localStorage 缓存逻辑，实现刷新即焚
-
-
     // 处理单词翻译（基本翻译）
-    const handleWordClick = async (word) => {
+    const handleWordClick = async (word, sentence) => {
         // 清理单词（去除标点符号）
         const cleanWord = word.toLowerCase().replace(/[^\w\s]/g, '');
 
+        // 使用 word + sentence 作为唯一key，支持同一单词在不同句子中有不同翻译
+        const cacheKey = `${cleanWord}|||${sentence}`;
+
         // 如果已经有翻译，切换显示/隐藏
-        if (translations[cleanWord]) {
-            const willShow = !translations[cleanWord].visible;
+        if (translations[cacheKey]) {
+            const willShow = !translations[cacheKey].visible;
 
             // 显示翻译时暂停
             if (willShow && pauseOnTranslate && videoPlayerRef.current) {
@@ -88,8 +121,8 @@ function App() {
 
             setTranslations(prev => ({
                 ...prev,
-                [cleanWord]: {
-                    ...prev[cleanWord],
+                [cacheKey]: {
+                    ...prev[cacheKey],
                     visible: willShow
                 }
             }));
@@ -101,7 +134,7 @@ function App() {
             videoPlayerRef.current.pause();
         }
 
-        console.log('🔤 翻译单词:', cleanWord);
+        console.log('🔤 翻译单词:', cleanWord, '在句子:', sentence.substring(0, 30) + '...');
 
         try {
             const response = await fetch('/api/translate?simple=true', {
@@ -109,7 +142,11 @@ function App() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ word: cleanWord }),
+                body: JSON.stringify({
+                    word: cleanWord,
+                    sentence: sentence,  // 传入句子作为上下文
+                    videoId: videoId     // 传入videoId以使用缓存
+                }),
             });
 
             const data = await response.json();
@@ -117,7 +154,8 @@ function App() {
             if (response.ok) {
                 setTranslations(prev => ({
                     ...prev,
-                    [cleanWord]: {
+                    [cacheKey]: {
+                        word: cleanWord,  // 保存原始单词用于显示
                         text: data.translation,
                         alternatives: null,
                         hasMore: data.hasMore || false, // 是否有更多释义
@@ -201,17 +239,26 @@ function App() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ text }),
+                body: JSON.stringify({
+                    text,
+                    videoId // 传入 videoId 以使用缓存
+                }),
             });
 
             const data = await response.json();
 
             if (response.ok) {
+                // 检查是否命中缓存
+                if (data.cached) {
+                    console.log('⚡️ 翻译缓存命中');
+                }
+
                 setSentenceTranslations(prev => ({
                     ...prev,
                     [index]: {
                         text: data.translation,
-                        visible: true
+                        visible: true,
+                        cached: data.cached || false
                     }
                 }));
             }
@@ -269,6 +316,14 @@ function App() {
                                             />
                                             <span>翻译时暂停</span>
                                         </label>
+                                        <button
+                                            className="clear-cache-btn"
+                                            onClick={handleClearCache}
+                                            disabled={!videoId}
+                                            title="清除当前视频的翻译缓存"
+                                        >
+                                            🗑️ 清除缓存
+                                        </button>
                                         <button
                                             className="toggle-video-button"
                                             onClick={() => setShowVideo(!showVideo)}

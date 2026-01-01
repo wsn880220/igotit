@@ -3,8 +3,11 @@ import cors from 'cors';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import dotenv from 'dotenv';
-import { v2 as translateV2 } from '@google-cloud/translate';
-import { initDictionary, queryWord, formatDictionaryResult } from './dictionary.js';
+// 注释：暂时停用 Google 翻译
+// import { v2 as translateV2 } from '@google-cloud/translate';
+// 注释：暂时停用本地词典
+// import { initDictionary, queryWord, formatDictionaryResult } from './dictionary.js';
+import ZhipuAI from 'zhipuai-sdk-nodejs-v4';
 
 // 加载环境变量
 dotenv.config();
@@ -13,19 +16,30 @@ const app = express();
 const PORT = 3000;
 const execPromise = promisify(exec);
 
-// 初始化 Google 翻译（v2 - Basic 版本，最便宜）
-let googleTranslate = null;
-if (process.env.GOOGLE_TRANSLATE_API_KEY) {
-  googleTranslate = new translateV2.Translate({
-    key: process.env.GOOGLE_TRANSLATE_API_KEY
-  });
-  console.log('✅ Google 翻译 API 已启用');
-} else {
-  console.log('⚠️  未配置 Google 翻译 API Key，将使用备用方案');
-}
+// 注释：暂时停用 Google 翻译
+// let googleTranslate = null;
+// if (process.env.GOOGLE_TRANSLATE_API_KEY) {
+//   googleTranslate = new translateV2.Translate({
+//     key: process.env.GOOGLE_TRANSLATE_API_KEY
+//   });
+//   console.log('✅ Google 翻译 API 已启用');
+// } else {
+//   console.log('⚠️  未配置 Google 翻译 API Key，将使用备用方案');
+// }
 
-// 初始化本地词典
-const localDictAvailable = initDictionary();
+// 注释：暂时停用本地词典
+// const localDictAvailable = initDictionary();
+
+// 初始化智谱 AI
+let zhipuAI = null;
+if (process.env.ZHIPU_AI_API_KEY) {
+  zhipuAI = new ZhipuAI({
+    apiKey: process.env.ZHIPU_AI_API_KEY
+  });
+  console.log('✅ 智谱 AI 已启用');
+} else {
+  console.log('⚠️  未配置智谱 AI API Key');
+}
 
 // 中间件
 app.use(cors());
@@ -79,6 +93,189 @@ async function getSubtitlesWithYtDlp(videoId) {
   }
 }
 
+// 简单的内存缓存
+const subtitleCache = new Map();
+
+// 翻译缓存：{ videoId: { sentences: Map(), words: Map() } }
+const translationCache = new Map();
+
+// 智能分批函数
+function splitSubtitlesIntoBatches(subtitles, maxBatchSize = 50) {
+  const batches = [];
+  for (let i = 0; i < subtitles.length; i += maxBatchSize) {
+    batches.push(subtitles.slice(i, i + maxBatchSize));
+  }
+  return batches;
+}
+
+// JSON 解析容错
+function parseAIResponse(content) {
+  // 1. 直接尝试解析
+  try {
+    return JSON.parse(content);
+  } catch { }
+
+  // 2. 移除 markdown 代码块标记
+  let cleaned = content.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+  try {
+    return JSON.parse(cleaned);
+  } catch { }
+
+  // 3. 提取 JSON 数组
+  const jsonMatch = cleaned.match(/\[[\s\S]*\]/);
+  if (jsonMatch) {
+    try {
+      return JSON.parse(jsonMatch[0]);
+    } catch { }
+  }
+
+  // 4. 查找第一个 [ 到最后一个 ]
+  const start = cleaned.indexOf('[');
+  const end = cleaned.lastIndexOf(']');
+  if (start !== -1 && end !== -1 && end > start) {
+    try {
+      return JSON.parse(cleaned.substring(start, end + 1));
+    } catch { }
+  }
+
+  console.error('❌ JSON 解析完全失败，AI 返回内容:', content.substring(0, 200));
+  return null;
+}
+
+// 常见英语虚词列表（冠词、介词、连词、助动词等）
+const STOP_WORDS = new Set([
+  'a', 'an', 'the', 'and', 'or', 'but', 'if', 'because', 'as', 'until', 'while',
+  'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between', 'into', 'through',
+  'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in',
+  'out', 'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once',
+  'is', 'am', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had',
+  'do', 'does', 'did', 'will', 'would', 'should', 'could', 'may', 'might', 'must',
+  'can', 'shall', 'ought', 's', 've', 'd', 'll', 't', 're', 'm'
+]);
+
+// 从句子中提取所有实词（去除虚词和标点）
+function extractWords(sentence) {
+  // 1. 转小写并分词
+  const words = sentence.toLowerCase()
+    .replace(/[^\w\s'-]/g, ' ')  // 保留连字符和撇号
+    .split(/\s+/)
+    .filter(w => w.length > 0);
+
+  // 2. 去除虚词，保留实词
+  const contentWords = words.filter(word => {
+    // 去除纯数字
+    if (/^\d+$/.test(word)) return false;
+    // 去除虚词
+    if (STOP_WORDS.has(word)) return false;
+    // 去除单字母（除了 'I'，但已在虚词中）
+    if (word.length === 1) return false;
+    return true;
+  });
+
+  // 3. 去重
+  return [...new Set(contentWords)];
+}
+
+// 规范化句子文本（处理缩写、空格等差异）
+function normalizeSentence(text) {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, ' ')  // 多个空格合并为一个
+    .replace(/['']s\b/g, ' is')  // 's → is
+    .replace(/['']re\b/g, ' are')  // 're → are
+    .replace(/['']m\b/g, ' am')  // 'm → am
+    .replace(/['']ve\b/g, ' have')  // 've → have
+    .replace(/['']ll\b/g, ' will')  // 'll → will
+    .replace(/['']d\b/g, ' would')  // 'd → would
+    .replace(/n['']t\b/g, ' not')  // n't → not
+    .replace(/['']/g, '')  // 移除其他撇号
+    .replace(/\s+/g, ' ')  // 再次合并空格
+    .trim();
+}
+
+// 批量翻译所有字幕（后台任务）- 包括句子和单词
+async function batchTranslateSubtitles(videoId, subtitles) {
+  const startTime = Date.now();
+  console.log(`🔄 开始批量翻译: ${videoId} (${subtitles.length} 条字幕)`);
+
+  // 减小批次大小，提高并行效率
+  const batches = splitSubtitlesIntoBatches(subtitles, 20);
+  const sentencesMap = new Map();
+
+  // 定义单批次处理函数
+  const processBatch = async (batch, batchIndex) => {
+    const batchStartTime = Date.now();
+    console.log(`📦 开始处理批次 ${batchIndex + 1}/${batches.length} (${batch.length} 条)`);
+
+    try {
+      const prompt = `你是JSON翻译工具。将英文字幕翻译成中文。
+
+字幕列表：
+${batch.map((s, i) => `${i}. "${s.text}"`).join('\n')}
+
+严格返回此JSON格式（纯JSON，无其他文字）：
+[{"index":0,"text":"原句","translation":"译文"}]
+
+要求：
+1. 只返回JSON数组
+2. index对应字幕索引
+3. text是原英文句子
+4. translation是中文翻译`;
+
+      const apiStartTime = Date.now();
+      // console.log(`⏱️  (批次 ${batchIndex + 1}) 调用 AI API...`);
+      const completion = await zhipuAI.createCompletions({
+        model: "GLM-4-Flash-250414",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.3,
+        max_tokens: 4000, // 减小 token 限制
+        stream: false
+      });
+      const apiDuration = Date.now() - apiStartTime;
+
+      const responseText = completion.choices[0].message.content.trim();
+      const translations = parseAIResponse(responseText);
+
+      if (translations && Array.isArray(translations)) {
+        translations.forEach(item => {
+          const subtitle = batch[item.index];
+          if (subtitle && item.translation && item.text) {
+            const sentenceText = normalizeSentence(item.text);
+            sentencesMap.set(sentenceText, {
+              translation: item.translation
+            });
+          }
+        });
+        const batchDuration = Date.now() - batchStartTime;
+        console.log(`✅ 批次 ${batchIndex + 1} 完成: ${translations.length} 句 (耗时: ${batchDuration}ms, API: ${apiDuration}ms)`);
+      } else {
+        console.error(`❌ 批次 ${batchIndex + 1} JSON 解析失败，跳过`);
+      }
+
+    } catch (error) {
+      console.error(`批次 ${batchIndex + 1} 失败:`, error.message);
+    }
+  };
+
+  // 并发处理批次（限制并发数）
+  const CONCURRENCY_LIMIT = 5;
+  for (let i = 0; i < batches.length; i += CONCURRENCY_LIMIT) {
+    const chunk = batches.slice(i, i + CONCURRENCY_LIMIT);
+    console.log(`🚀 启动并发批次: ${i + 1} - ${Math.min(i + chunk.length, batches.length)} (总共 ${batches.length})`);
+
+    await Promise.all(chunk.map((batch, idx) => processBatch(batch, i + idx)));
+  }
+
+  // 保存到缓存
+  translationCache.set(videoId, {
+    sentences: sentencesMap
+  });
+
+  const totalDuration = Date.now() - startTime;
+  console.log(`✅ 批量翻译完成: ${videoId} (${sentencesMap.size} 句, 总耗时: ${totalDuration}ms = ${(totalDuration / 1000).toFixed(2)}s)`);
+}
+
 // API 路由：获取字幕
 app.post('/api/subtitles', async (req, res) => {
   try {
@@ -98,7 +295,18 @@ app.post('/api/subtitles', async (req, res) => {
       });
     }
 
-    console.log(`📹 视频 ID: ${videoId}`);
+    console.log(`\n🔍 请求处理: /api/subtitles`);
+    console.log(`   URL: ${url}`);
+    console.log(`   解析得到 VideoID: ${videoId}`);
+
+    // 1. 检查缓存
+    if (subtitleCache.has(videoId)) {
+      console.log(`⚡️ 字幕缓存命中: ${videoId}`);
+      return res.json({
+        videoId,
+        subtitles: subtitleCache.get(videoId)
+      });
+    }
 
     // 使用 yt-dlp 获取字幕
     const subtitles = await getSubtitlesWithYtDlp(videoId);
@@ -110,6 +318,18 @@ app.post('/api/subtitles', async (req, res) => {
     }
 
     console.log(`✅ 成功获取 ${subtitles.length} 条字幕`);
+
+    // 2. 存入缓存
+    subtitleCache.set(videoId, subtitles);
+
+    // 3. 启动后台翻译任务（不等待完成）
+    if (zhipuAI) {
+      // 触发后台批量翻译（已禁用）
+      // batchTranslateSubtitles(videoId, subtitles).catch(err => {
+      //   console.error(`❌ 后台翻译任务失败: ${videoId}`, err);
+      // });
+      console.log(`ℹ️ 批量翻译已禁用，仅支持实时单词翻译`);
+    }
 
     // 返回字幕数据
     res.json({
@@ -136,104 +356,66 @@ app.post('/api/subtitles', async (req, res) => {
   }
 });
 
-// 翻译API - 支持简单翻译和详细翻译两种模式
+// 翻译API - 使用智谱 AI 根据上下文翻译单词
 app.post('/api/translate', async (req, res) => {
   try {
-    const { word } = req.body;
-    const isSimple = req.query.simple === 'true';
-    const isDetailed = req.query.detailed === 'true';
+    const { word, sentence, videoId } = req.body;
 
     if (!word) {
       return res.status(400).json({ error: '请提供要翻译的单词' });
     }
 
-    console.log(`🔤 翻译单词: ${word} (${isDetailed ? '详细模式' : '简单模式'})`);
-
     const cleanWord = word.toLowerCase().trim();
-    const alternatives = [];
-    let mainTranslation = '';
-    let mainPos = '';
-    let localResultFormatted = null;
+    console.log(`🔤 翻译单词: ${cleanWord}${sentence ? ` (句子: ${sentence.substring(0, 30)}...)` : ''}`);
 
-    // 1. 查询本地词典（无论是否详细模式，都查一下，用于判断 hasMore）
-    if (localDictAvailable) {
-      try {
-        const localResult = queryWord(cleanWord);
-        if (localResult) {
-          localResultFormatted = formatDictionaryResult(localResult);
-        }
-      } catch (localError) {
-        console.log(`📚 本地词典查询失败:`, localError.message);
-      }
+    // 检查智谱 AI 是否可用
+    if (!zhipuAI) {
+      return res.status(503).json({ error: '智谱 AI 服务未配置，请在 .env 中设置 ZHIPU_AI_API_KEY' });
     }
 
-    // 2. 详细模式：直接返回本地词典的 alternatives
-    if (isDetailed) {
-      if (localResultFormatted && localResultFormatted.alternatives) {
-        console.log(`📚 本地词典命中（详细）: ${cleanWord}`);
-        alternatives.push(...localResultFormatted.alternatives);
-      }
+    // 实时翻译单词（带句子上下文）
+    console.log(`📝 实时翻译单词: ${cleanWord}`);
 
-      return res.json({
-        word: cleanWord,
-        alternatives: alternatives.length > 0 ? alternatives : null
+    try {
+      // 构建提示词：如果有句子上下文，就根据上下文翻译；否则就单纯翻译单词
+      // 构建提示词：优化 Prompt 以获取更准确的上下文含义
+      const prompt = sentence
+        ? `请分析英文单词 "${cleanWord}" 在句子 "${sentence}" 中的具体含义。
+请给出一个最贴切的中文翻译（仅输出中文词义）。
+注意：
+1. 如果是常用动词（如 have, take, get），尽量保留其基本含义（如"有"、"拿"、"获取"），除非在上下文中完全改变了意思。
+2. 如果是代词或不定代词（如 one, it, that），请翻译这个词本身（如"一个"、"它"、"那个"），不要直接翻译它指代的对象（例如不要把 one 翻译成 dog）。
+3. 不要过度意译整个短语，用户想知道这个单词本身的意思。`
+        : `请将英文单词 "${cleanWord}" 翻译成中文。只需要给出简洁的中文翻译，不需要解释或其他内容。`;
+
+      const completion = await zhipuAI.createCompletions({
+        model: "GLM-4-Flash-250414",
+        messages: [
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        temperature: 0.3,  // 降低随机性，使翻译更稳定
+        max_tokens: 50,    // 限制输出长度
+        stream: false
       });
+
+      const translation = completion.choices[0].message.content.trim();
+      console.log(`✅ 智谱 AI 翻译: ${cleanWord} -> ${translation}`);
+
+      res.json({
+        word: cleanWord,
+        translation: translation,
+        alternatives: null,
+        hasMore: false,
+        cached: false
+      });
+
+    } catch (error) {
+      console.error('翻译错误:', error);
+      res.status(500).json({ error: '翻译服务出错' });
     }
-
-    // 3. 简单模式：优先获取 Google 翻译作为主翻译
-    if (googleTranslate) {
-      try {
-        const [translation] = await googleTranslate.translate(cleanWord, 'zh-CN');
-        mainTranslation = translation;
-        console.log(`✅ Google 翻译: ${cleanWord} -> ${mainTranslation}`);
-      } catch (error) {
-        console.error(`Google 翻译失败:`, error.message);
-      }
-    }
-
-    // 4. 如果 Google 翻译失败，使用本地词典的主翻译
-    if (!mainTranslation && localResultFormatted) {
-      mainTranslation = localResultFormatted.mainTranslation;
-      console.log(`📚 Google 失败，回退到本地词典: ${cleanWord}`);
-    }
-
-    // 5. 如果都失败，使用备用 Mock 字典
-    if (!mainTranslation) {
-      const mockTranslations = {
-        'hello': '你好', 'welcome': '欢迎', 'goodbye': '再见',
-        'thank': '感谢', 'thanks': '谢谢', 'please': '请',
-        'sorry': '对不起', 'yes': '是', 'no': '不',
-        'elephants': '大象', 'elephant': '大象',
-        'cat': '猫', 'dog': '狗', 'bird': '鸟',
-        'learning': '学习', 'study': '学习', 'practice': '练习',
-        'tutorial': '教程', 'lesson': '课程',
-        'amazing': '惊人的', 'exciting': '令人兴奋的',
-        'interesting': '有趣的', 'beautiful': '美丽的',
-        'easy': '简单的', 'difficult': '困难的',
-        'important': '重要的', 'there': '那里',
-        'say': '说', 'much': '多', 'pretty': '相当',
-        'here': '这里', 'about': '关于', 'so': '所以'
-      };
-      if (mockTranslations[cleanWord]) {
-        mainTranslation = mockTranslations[cleanWord];
-        console.log(`📖 使用备用翻译字典`);
-      }
-    }
-
-    // 6. 如果最终还是没有翻译，返回原文
-    if (!mainTranslation) {
-      mainTranslation = cleanWord;
-    }
-
-    // 7. 计算 hasMore：如果本地词典有 alternatives，则可以展开
-    const hasMore = localResultFormatted && localResultFormatted.alternatives && localResultFormatted.alternatives.length > 0;
-
-    res.json({
-      word: cleanWord,
-      translation: mainTranslation,
-      alternatives: null,
-      hasMore: hasMore // 告知前端是否有更多释义可查询（本地词典数据）
-    });
 
   } catch (error) {
     console.error('翻译错误:', error);
@@ -241,31 +423,64 @@ app.post('/api/translate', async (req, res) => {
   }
 });
 
-// 翻译句子 API
+// 翻译句子 API - 使用智谱 AI（优先使用缓存）
 app.post('/api/translate-sentence', async (req, res) => {
   try {
-    const { text } = req.body;
+    const { text, videoId } = req.body;
 
     if (!text) {
       return res.status(400).json({ error: '请提供要翻译的句子' });
     }
 
-    console.log(`📝 翻译句子: ${text.substring(0, 50)}...`);
-
-    if (googleTranslate) {
-      try {
-        const [translation] = await googleTranslate.translate(text, 'zh-CN');
-        console.log(`✅ 句子翻译完成`);
+    // 1. 优先查询缓存
+    if (videoId && translationCache.has(videoId)) {
+      const cache = translationCache.get(videoId);
+      // 使用规范化后的句子查询缓存
+      const normalizedText = normalizeSentence(text);
+      if (cache.sentences && cache.sentences.has(normalizedText)) {
+        const data = cache.sentences.get(normalizedText);
+        console.log(`⚡️ 句子缓存命中: ${text.substring(0, 30)}...`);
         return res.json({
           original: text,
-          translation: translation
+          translation: data.translation,
+          cached: true
         });
-      } catch (error) {
-        console.error(`Google 翻译失败:`, error.message);
-        return res.status(500).json({ error: '翻译失败' });
       }
-    } else {
-      return res.status(503).json({ error: 'Google 翻译服务未配置' });
+    }
+
+    // 2. 缓存未命中，实时翻译
+    console.log(`📝 实时翻译句子: ${text.substring(0, 50)}...`);
+
+    // 检查智谱 AI 是否可用
+    if (!zhipuAI) {
+      return res.status(503).json({ error: '智谱 AI 服务未配置，请在 .env 中设置 ZHIPU_AI_API_KEY' });
+    }
+
+    try {
+      const completion = await zhipuAI.createCompletions({
+        model: "GLM-4-Flash-250414",
+        messages: [
+          {
+            role: "user",
+            content: `请将以下英文句子翻译成中文。只需要给出翻译结果，不需要解释或其他内容。\n\n英文：${text}\n\n中文翻译：`
+          }
+        ],
+        temperature: 0.3,
+        max_tokens: 200,
+        stream: false
+      });
+
+      const translation = completion.choices[0].message.content.trim();
+      console.log(`✅ 句子翻译完成`);
+
+      return res.json({
+        original: text,
+        translation: translation,
+        cached: false
+      });
+    } catch (aiError) {
+      console.error(`智谱 AI 翻译失败:`, aiError.message);
+      return res.status(500).json({ error: '翻译失败，请稍后重试' });
     }
   } catch (error) {
     console.error('句子翻译错误:', error);
@@ -285,4 +500,35 @@ app.listen(PORT, () => {
   console.log(`📝 字幕 API (yt-dlp): POST http://localhost:${PORT}/api/subtitles`);
   console.log(`🎬 演示 API: POST http://localhost:${PORT}/api/subtitles/demo`);
   console.log(`🔤 翻译 API: POST http://localhost:${PORT}/api/translate\n`);
+});
+
+// 清除缓存 API（测试用）
+app.post('/api/clear-cache', (req, res) => {
+  try {
+    const { videoId } = req.body;
+
+    if (!videoId) {
+      return res.status(400).json({ error: '请提供 videoId' });
+    }
+
+    // 清除字幕缓存
+    if (subtitleCache.has(videoId)) {
+      subtitleCache.delete(videoId);
+      console.log(`🗑️  已清除字幕缓存: ${videoId}`);
+    }
+
+    // 清除翻译缓存
+    if (translationCache.has(videoId)) {
+      translationCache.delete(videoId);
+      console.log(`🗑️  已清除翻译缓存: ${videoId}`);
+    }
+
+    res.json({
+      success: true,
+      message: `缓存已清除: ${videoId}`
+    });
+  } catch (error) {
+    console.error('清除缓存错误:', error);
+    res.status(500).json({ error: '清除缓存失败' });
+  }
 });
