@@ -16,3 +16,7 @@ subtitle_*.json3
 subtitle_*.en.*
 *.part
 cookies.txt
+
+# 数据库文件（太大无法上传到 GitHub）
+server/data/
+*.db
