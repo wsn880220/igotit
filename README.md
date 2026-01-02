@@ -13,14 +13,15 @@
 
 [![Deploy on Zeabur](https://zeabur.com/button.svg)](https://zeabur.com/templates?repository=https://github.com/wsn880220/igotit)
 
-**自动部署流程：**
+**部署步骤：**
 1. 点击上方按钮跳转到 Zeabur
-2. 选择 **Docker Compose** 部署
-3. 上传项目中的 `docker-compose-zeabur.yml` 文件
-4. 配置环境变量：`ZHIPU_API_KEY`（从 https://open.bigmodel.cn/ 获取）
-5. 点击部署，Zeabur 会自动拉取最新镜像
+2. 选择 **GitHub** 部署方式
+3. 选择 `igotit` 仓库
+4. 配置环境变量：
+   - `ZHIPU_API_KEY`: 你的智谱 AI API 密钥（从 https://open.bigmodel.cn/ 获取）
+5. 点击部署
 
-> 镜像由 GitHub Actions 自动构建，每次推送代码到 main 分支都会自动更新。
+Zeabur 会自动构建并部署前后端一体的应用。
 
 ## 🛠️ 本地开发
 

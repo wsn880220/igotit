@@ -1,4 +1,4 @@
 {
     "dockerfilePath": "Dockerfile",
-    "buildContext": "."
+    "buildContext": "../../"
 }

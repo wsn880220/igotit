@@ -1,5 +1,0 @@
-{
-  "buildCommand": "pnpm run build",
-  "startCommand": "pnpm run preview",
-  "outputDirectory": "dist"
-}
