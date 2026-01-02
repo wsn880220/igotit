@@ -1,23 +1,5 @@
 # ================================
-# 阶段 1: 构建前端
-# ================================
-FROM node:18-slim AS frontend-builder
-
-WORKDIR /build
-
-# 复制前端代码（从项目根目录）
-COPY package*.json ./
-COPY index.html ./
-COPY vite.config.js ./
-COPY public ./public
-COPY src ./src
-
-# 安装依赖并构建
-RUN npm install
-RUN npm run build
-
-# ================================
-# 阶段 2: 构建后端（最终镜像）
+# IGotIt Backend Dockerfile
 # ================================
 FROM node:18-slim
 
@@ -32,7 +14,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # 复制后端依赖文件
-COPY server/package*.json ./
+COPY package*.json ./
 
 # 安装 Node.js 依赖
 RUN npm ci --only=production
@@ -41,13 +23,10 @@ RUN npm ci --only=production
 RUN pip3 install --break-system-packages --no-cache-dir yt-dlp
 
 # 复制后端代码
-COPY server/server.js ./
-COPY server/channels.json ./
-COPY server/get_subtitles.py ./
-COPY server/.env.example* ./ 2>/dev/null || true
-
-# 从前端构建阶段复制构建产物
-COPY --from=frontend-builder /build/dist ./dist
+COPY server.js ./
+COPY channels.json ./
+COPY get_subtitles.py ./
+COPY .env.example* ./ 2>/dev/null || true
 
 # 设置 Python 脚本为可执行
 RUN chmod +x get_subtitles.py 2>/dev/null || true
