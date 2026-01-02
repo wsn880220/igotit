@@ -1,12 +1,12 @@
 # IGotIt - Zeabur 一键部署配置
-# 使用预构建的 Docker 镜像实现一键部署
+# 使用 GitHub Actions 自动构建的镜像
 
 version: '3.8'
 
 services:
   # 前端服务
   frontend:
-    image: docker.io/your-username/igotit-frontend:latest
+    image: ghcr.io/wsn880220/igotit-frontend:latest
     container_name: igotit-frontend
     ports:
       - '80:80'
@@ -20,7 +20,7 @@ services:
 
   # 后端服务
   backend:
-    image: docker.io/your-username/igotit-backend:latest
+    image: ghcr.io/wsn880220/igotit-backend:latest
     container_name: igotit-backend
     ports:
       - '3000:3000'

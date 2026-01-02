@@ -11,39 +11,16 @@
 
 ## 🚀 Zeabur 一键部署
 
-### 前置步骤：构建并推送 Docker 镜像
+[![Deploy on Zeabur](https://zeabur.com/button.svg)](https://zeabur.com/templates?repository=https://github.com/wsn880220/igotit)
 
-首次部署前，需要先构建并推送 Docker 镜像：
-
-```bash
-# 1. 克隆仓库
-git clone https://github.com/wsn880220/igotit.git
-cd igotit
-
-# 2. 编辑构建脚本，修改用户名
-# 将 build-and-push.sh 中的 USERNAME 改为你的 Docker Hub 或 GitHub 用户名
-
-# 3. 构建并推送镜像
-chmod +x build-and-push.sh
-./build-and-push.sh
-
-# 4. 更新 docker-compose-zeabur.yml
-# 将 your-username 替换为你的实际用户名
-```
-
-### 一键部署
-
-[![Deploy on Zeabur](https://zeabur.com/button.svg)](https://zeabur.com/templates)
-
-**部署步骤：**
-
+**自动部署流程：**
 1. 点击上方按钮跳转到 Zeabur
-2. 选择 "Docker Compose" 部署方式
-3. 上传 `docker-compose-zeabur.yml` 文件
-4. 配置后端环境变量：
-   - `ZHIPU_API_KEY`: 你的智谱 AI API 密钥（从 https://open.bigmodel.cn/ 获取）
+2. 选择 **Docker Compose** 部署
+3. 上传项目中的 `docker-compose-zeabur.yml` 文件
+4. 配置环境变量：`ZHIPU_API_KEY`（从 https://open.bigmodel.cn/ 获取）
+5. 点击部署，Zeabur 会自动拉取最新镜像
 
-> 注意：如果还没有推送镜像，请先完成上述前置步骤。
+> 镜像由 GitHub Actions 自动构建，每次推送代码到 main 分支都会自动更新。
 
 ## 🛠️ 本地开发
 
