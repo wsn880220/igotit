@@ -10,12 +10,12 @@ FROM node:18-slim AS frontend-builder
 
 WORKDIR /build
 
-# 复制前端代码
-COPY packages/frontend/package*.json ./
-COPY packages/frontend/index.html ./
-COPY packages/frontend/vite.config.js ./
-COPY packages/frontend/public ./public
-COPY packages/frontend/src ./src
+# 复制前端代码（相对于 packages/backend 的路径）
+COPY ../frontend/package*.json ./
+COPY ../frontend/index.html ./
+COPY ../frontend/vite.config.js ./
+COPY ../frontend/public ./public
+COPY ../frontend/src ./src
 
 # 安装依赖并构建
 RUN npm install
@@ -36,8 +36,8 @@ RUN apt-get update && apt-get install -y \
 # 设置工作目录
 WORKDIR /app
 
-# 复制后端依赖文件
-COPY packages/backend/package*.json ./
+# 复制后端依赖文件（从当前目录）
+COPY package*.json ./
 
 # 安装 Node.js 依赖
 RUN npm ci --only=production
@@ -46,10 +46,10 @@ RUN npm ci --only=production
 RUN pip3 install --break-system-packages --no-cache-dir yt-dlp
 
 # 复制后端代码
-COPY packages/backend/server.js ./
-COPY packages/backend/channels.json ./
-COPY packages/backend/get_subtitles.py ./
-COPY packages/backend/.env.example* ./ 2>/dev/null || true
+COPY server.js ./
+COPY channels.json ./
+COPY get_subtitles.py ./
+COPY .env.example* ./ 2>/dev/null || true
 
 # 从前端构建阶段复制构建产物
 COPY --from=frontend-builder /build/dist ./dist
