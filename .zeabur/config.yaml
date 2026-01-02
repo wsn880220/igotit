@@ -1,0 +1,15 @@
+# Zeabur 多服务部署配置
+# Zeabur 会根据此配置部署两个独立服务
+
+# 前端服务配置
+services:
+  - name: frontend
+    root: packages/frontend
+    buildCommand: pnpm run build
+    startCommand: pnpm run preview
+    outputDirectory: dist
+
+  - name: backend
+    root: packages/backend
+    dockerfilePath: Dockerfile
+    buildContext: .
