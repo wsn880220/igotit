@@ -15,12 +15,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY server.js ./
 COPY channels.json ./
-COPY invidious.js ./
-COPY .env.example ./
-
-# 复制根目录的 Python 脚本
-COPY get_subtitles.py /app/get_subtitles.py
-COPY cookies.txt* /app/ 2>/dev/null || true
+COPY .env.example* ./ 
+COPY get_subtitles.py ./
 
 # 安装 Node.js 依赖
 RUN npm ci --only=production
