@@ -1,0 +1,40 @@
+# IGotIt - Docker Compose 配置
+# 用于本地开发和 Zeabur 一键部署
+
+version: '3.8'
+
+services:
+  # 前端服务
+  frontend:
+    build:
+      context: ./packages/frontend
+      dockerfile: Dockerfile
+    container_name: igotit-frontend
+    ports:
+      - '80:80'
+    environment:
+      - VITE_API_URL=http://backend:3000
+    depends_on:
+      - backend
+    networks:
+      - igotit-network
+    restart: unless-stopped
+
+  # 后端服务
+  backend:
+    build:
+      context: ./packages/backend
+      dockerfile: Dockerfile
+    container_name: igotit-backend
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+      - ZHIPU_API_KEY=${ZHIPU_API_KEY}
+    networks:
+      - igotit-network
+    restart: unless-stopped
+
+networks:
+  igotit-network:
+    driver: bridge

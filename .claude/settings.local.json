@@ -3,7 +3,10 @@
     "allow": [
       "Bash(npm run dev)",
       "Bash(npm install:*)",
-      "mcp__glm-webReader__webReader"
+      "mcp__glm-webReader__webReader",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git add:*)"
     ]
   }
 }
