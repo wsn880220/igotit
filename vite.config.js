@@ -11,5 +11,9 @@ export default defineConfig({
                 changeOrigin: true
             }
         }
+    },
+    define: {
+        // 允许在前端代码中使用环境变量
+        'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || '')
     }
 });

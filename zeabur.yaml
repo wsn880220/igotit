@@ -1,0 +1,30 @@
+# Zeabur 部署配置
+
+# 前端服务（预构建静态文件）
+frontend:
+  type: prebuilt
+  buildCommand: npm install && npm run build
+  outputDirectory: dist
+  # 环境变量
+  env:
+    - key = VITE_API_URL
+      value = ${API_URL}
+  # 路由重定向（SPA 需要）
+  routes:
+    - src: /*
+      dest: /index.html
+      status: 200
+
+# 后端服务
+backend:
+  type: node
+  buildCommand: npm install
+  startCommand: npm start
+  # 环境变量
+  env:
+    - key = PORT
+      value = 3000
+    - key = ZHIPU_API_KEY
+      value = ${ZHIPU_API_KEY}
+    - key = NODE_ENV
+      value = production
