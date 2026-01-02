@@ -11,15 +11,46 @@ import tempfile
 def get_subtitles(video_id):
     """获取 YouTube 视频的英文字幕"""
     url = f"https://www.youtube.com/watch?v={video_id}"
-    
+
     # 获取脚本所在目录
     script_dir = os.path.dirname(os.path.abspath(__file__))
     venv_ytdlp = os.path.join(script_dir, 'venv', 'bin', 'yt-dlp')
-    
+
+    # 检查 cookies 文件
+    cookies_file = os.path.join(script_dir, 'cookies.txt')
+    cookies_args = []
+    if os.path.exists(cookies_file):
+        cookies_args = ['--cookies', cookies_file]
+
     # 创建临时目录
     temp_dir = tempfile.mkdtemp()
     output_template = os.path.join(temp_dir, "subtitle")
-    
+
+    # 先获取视频标题
+    video_title = None
+    try:
+        cmd_title = [
+            venv_ytdlp,
+            "--get-title",
+            "--quiet",
+            "--no-warnings",
+            *cookies_args,
+            url
+        ]
+        result = subprocess.run(
+            cmd_title,
+            capture_output=True,
+            text=True,
+            timeout=30  # 增加到30秒
+        )
+        if result.returncode == 0 and result.stdout:
+            video_title = result.stdout.strip()
+            print(f"获取到视频标题: {video_title}", file=sys.stderr)
+        else:
+            print(f"获取标题失败: returncode={result.returncode}, stderr={result.stderr}", file=sys.stderr)
+    except Exception as e:
+        print(f"获取标题异常: {e}", file=sys.stderr)
+
     try:
         # 使用 yt-dlp 下载字幕
         # 修改为支持所有英文变体：en, en-US, en-GB, en-AU等
@@ -31,16 +62,17 @@ def get_subtitles(video_id):
             "--skip-download",
             "--sub-format", "vtt",
             "-o", output_template,
+            *cookies_args,
             url
         ]
-        
+
         result = subprocess.run(
             cmd,
             capture_output=True,
             text=True,
             timeout=30
         )
-        
+
         # 查找生成的 VTT 文件
         vtt_file = f"{output_template}.en.vtt"
         if not os.path.exists(vtt_file):
@@ -49,20 +81,24 @@ def get_subtitles(video_id):
                 if file.endswith(".vtt") and "en" in file:
                     vtt_file = os.path.join(temp_dir, file)
                     break
-        
+
         if not os.path.exists(vtt_file):
             print(json.dumps({"error": "没有找到英文字幕"}))
             return
-        
+
         # 解析 VTT 文件
         subtitles = parse_vtt(vtt_file)
-        
-        # 输出 JSON
-        print(json.dumps({
+
+        # 输出 JSON (包含标题)
+        output_data = {
             "videoId": video_id,
             "subtitles": subtitles
-        }))
-        
+        }
+        if video_title:
+            output_data["title"] = video_title
+
+        print(json.dumps(output_data))
+
     except subprocess.TimeoutExpired:
         print(json.dumps({"error": "请求超时"}))
     except Exception as e:

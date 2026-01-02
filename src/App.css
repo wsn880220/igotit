@@ -1,255 +1,465 @@
+/* ============================================
+   APP LAYOUT & CONTAINER STYLES
+   ============================================ */
+
 .app {
-    min-height: 100vh;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    max-width: 1400px;
-    margin: 0 auto;
-    width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+  position: relative;
+  padding: var(--space-8);
 }
 
-/* 统一的容器 */
+/* ============================================
+   HERO SECTION - 标题区域
+   ============================================ */
+
 .header-search-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 3rem 2rem 2rem 2rem;
-    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-20) var(--space-8) var(--space-12);
+  transition: all var(--transition-slow);
+  position: relative;
 }
 
 .header-search-wrapper.compact {
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 1rem 2rem;
-    gap: 2rem;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  padding: var(--space-6) var(--space-8);
+  padding-bottom: var(--space-6);
+  margin-bottom: var(--space-8);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
+/* ============================================
+   APP HEADER
+   ============================================ */
+
 .app-header {
-    text-align: center;
-    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+  transition: all var(--transition-slow);
+  margin-bottom: var(--space-8);
 }
 
 .header-search-wrapper.compact .app-header {
-    text-align: left;
+  text-align: left;
+  margin-bottom: 0;
+  margin-right: var(--space-3);
 }
 
 .app-title {
-    font-size: 4rem;
-    font-weight: 800;
-    margin: 0;
-    letter-spacing: -0.02em;
-    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: var(--font-display);
+  font-size: var(--text-6xl);
+  font-weight: var(--font-bold);
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: var(--leading-tight);
+  transition: all var(--transition-slow);
+  color: var(--color-text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
 }
 
-.header-search-wrapper.compact .app-title {
-    font-size: 2rem;
+.app-title.clickable {
+  cursor: pointer;
 }
 
-.gradient-text {
-    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+.app-title.clickable:hover {
+  color: var(--color-orange);
+}
+
+.app-subtitle-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: var(--space-6);
+  transition: all var(--transition-slow);
+}
+
+.header-search-wrapper.compact .app-subtitle-row {
+  display: none;
+}
+
+.app-title-logo {
+  height: 1.2em;
+  width: auto;
+  transition: all var(--transition-base);
 }
 
 .app-subtitle {
-    font-size: 1.2rem;
-    color: var(--text-secondary);
-    margin: 0.5rem 0 0 0;
-    font-weight: 500;
-    opacity: 1;
-    max-height: 50px;
-    overflow: hidden;
-    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: var(--font-body);
+  font-size: var(--text-xl);
+  color: var(--color-text-secondary);
+  margin: 0;
+  font-weight: var(--font-normal);
+  letter-spacing: 0.01em;
 }
 
-.header-search-wrapper.compact .app-subtitle {
-    opacity: 0;
-    max-height: 0;
-    margin: 0;
+.header-search-wrapper.compact .app-title {
+  font-size: var(--text-3xl);
 }
+
+/* ============================================
+   URL INPUT CONTAINER
+   ============================================ */
 
 .url-input-container {
-    max-width: 700px;
-    width: 100%;
-    margin: 0;
-    padding: 0 2rem;
-    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  max-width: 680px;
+  width: 100%;
+  margin: 0;
+  transition: all var(--transition-slow);
 }
 
 .header-search-wrapper.compact .url-input-container {
-    max-width: none;
-    flex: 1;
-    padding: 0;
+  max-width: none;
+  margin: 0;
+  flex: 1;
 }
+
+/* ============================================
+   MAIN CONTENT AREA
+   ============================================ */
 
 .content-container {
-    display: grid;
-    /* 默认左右并排：左边视频(1.2份)，右边字幕(0.8份) */
-    grid-template-columns: 1.2fr 0.8fr;
-    grid-template-rows: 100%;
-    gap: var(--spacing-md);
-    flex: 1;
-    min-height: 0;
-    /* 增加高度利用率 */
-    max-height: calc(100vh - 120px);
-    overflow: hidden;
-    /* 减少留白，给内容更多空间 */
-    padding: 0 2rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) 1fr;
+  grid-template-rows: 100%;
+  gap: var(--space-8);
+  flex: 1;
+  min-height: 0;
+  max-height: calc(100vh - 120px);
+  overflow: hidden;
+  animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: grid-template-columns 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), gap 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
+/* 视频隐藏时，字幕区域扩展并居中 */
+.content-container.video-hidden {
+  grid-template-columns: 0fr 1fr;
+  gap: 0;
+  padding: 0;
+}
+
+.content-container.video-hidden .subtitle-section {
+  max-width: 100%;
+  width: 100%;
+}
+
+/* ============================================
+   VIDEO SECTION
+   ============================================ */
+
 .video-section {
-    display: flex;
-    flex-direction: column;
-    height: fit-content;
-    max-height: 100%;
-    max-width: 100%;
-    transition: all 0.3s ease;
-    /* 垂直居中 */
-    justify-content: center;
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+  max-height: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  justify-content: center;
+  animation: fadeInScale 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .video-section.hidden {
-    display: none;
+  visibility: hidden;
+  pointer-events: none;
 }
 
+/* ============================================
+   SUBTITLE SECTION
+   ============================================ */
+
 .subtitle-section {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    height: 100%;
-    transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  transition: all var(--transition-slow);
+  animation: fadeInScale 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both;
 }
 
 .subtitle-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--spacing-sm);
-    background: var(--bg-secondary);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--spacing-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-5) var(--space-6);
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-5);
+  box-shadow: var(--shadow-sm);
 }
 
 .subtitle-header h3 {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
 }
 
 .subtitle-controls {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
 }
 
+/* ============================================
+   CONTROLS & BUTTONS
+   ============================================ */
+
 .pause-toggle {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    cursor: pointer;
-    user-select: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  user-select: none;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
+}
+
+.pause-toggle:hover {
+  background: var(--color-cream-light);
+  color: var(--color-text-primary);
 }
 
 .pause-toggle input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  position: relative;
+  background: var(--color-cream);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-base);
+}
+
+.pause-toggle input[type="checkbox"]:checked {
+  background: var(--color-orange);
+  border-color: var(--color-orange);
+}
+
+.pause-toggle input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: var(--font-bold);
 }
 
 .pause-toggle span {
-    font-weight: 500;
+  font-weight: var(--font-medium);
 }
 
+.clear-cache-btn,
 .toggle-video-button {
-    padding: 0.5rem 1rem;
-    background: var(--accent-primary);
-    color: white;
-    border: none;
-    border-radius: var(--radius-sm);
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  font-family: var(--font-body);
 }
 
+.clear-cache-btn:hover,
 .toggle-video-button:hover {
-    background: var(--accent-secondary);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+  background: var(--color-orange);
+  color: white;
+  border-color: var(--color-orange);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
+
+.clear-cache-btn:active,
+.toggle-video-button:active {
+  transform: translateY(0);
+}
+
+/* ============================================
+   EMPTY STATE - 空状态
+   ============================================ */
 
 .empty-state {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-md);
-    color: var(--text-secondary);
-    padding: var(--spacing-xl);
-    animation: fadeIn 0.6s ease-out;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  color: var(--color-text-secondary);
+  padding: var(--space-24) var(--space-12);
+  animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .empty-icon {
-    font-size: 5rem;
-    opacity: 0.6;
-    animation: pulse 2s ease-in-out infinite;
+  font-size: 64px;
+  opacity: 0.6;
+  animation: pulse 3s ease-in-out infinite;
 }
 
 .empty-state h2 {
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0;
+  font-size: var(--text-3xl);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+  letter-spacing: -0.01em;
 }
 
 .empty-state p {
-    font-size: 1rem;
-    margin: 0;
+  font-size: var(--text-lg);
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-weight: var(--font-normal);
+  max-width: 400px;
+  text-align: center;
 }
 
-/* 响应式设计 - 窄屏设备（移动端）垂直排列 */
-@media (max-width: 1024px) {
-    .content-container {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr;
-        max-height: calc(100vh - 200px);
-        padding: 0 1rem;
-    }
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
 
-    .video-section {
-        max-height: 400px;
-        justify-content: flex-start;
-    }
+@media (max-width: 1200px) {
+  .content-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    max-height: none;
+  }
 
-    .header-search-wrapper.compact {
-        padding: 1rem;
-    }
+  .video-section {
+    max-height: 500px;
+    justify-content: flex-start;
+  }
+
+  .header-search-wrapper.compact {
+    flex-wrap: wrap;
+  }
 }
 
 @media (max-width: 768px) {
-    .app {
-        padding: var(--spacing-sm);
-    }
+  .app {
+    padding: var(--space-4);
+  }
 
-    .app-title {
-        font-size: 2rem;
-    }
+  .header-search-wrapper {
+    padding: var(--space-12) var(--space-4) var(--space-8);
+  }
 
-    .app-subtitle {
-        font-size: 1rem;
-    }
+  .header-search-wrapper.compact {
+    padding: var(--space-4);
+    gap: var(--space-4);
+  }
 
-    .empty-icon {
-        font-size: 3rem;
-    }
+  .app-title {
+    font-size: var(--text-5xl);
+  }
 
-    .empty-state h2 {
-        font-size: 1.4rem;
-    }
+  .header-search-wrapper.compact .app-title {
+    font-size: var(--text-2xl);
+  }
+
+  .content-container {
+    padding: 0;
+    gap: var(--space-6);
+  }
+
+  .video-section {
+    max-height: 400px;
+  }
+
+  .subtitle-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-5);
+  }
+
+  .subtitle-controls {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .empty-state {
+    padding: var(--space-16) var(--space-8);
+    gap: var(--space-5);
+  }
+
+  .empty-icon {
+    font-size: 48px;
+  }
+
+  .empty-state h2 {
+    font-size: var(--text-2xl);
+  }
+
+  .empty-state p {
+    font-size: var(--text-base);
+  }
+
+  .pause-toggle span {
+    display: none;
+  }
+
+  /* 视频隐藏时的移动端样式 */
+  .content-container.video-hidden .subtitle-section {
+    max-width: 100%;
+    padding: 0 var(--space-4);
+  }
+
+  .content-container.video-hidden .subtitle-header {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .content-container.video-hidden .subtitle-controls {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-title {
+    font-size: var(--text-4xl);
+  }
+
+  .header-search-wrapper.compact .app-title {
+    font-size: var(--text-xl);
+  }
+
+  .app-title-logo {
+    height: 1.2em;
+  }
+
+  .subtitle-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .clear-cache-btn,
+  .toggle-video-button {
+    width: 100%;
+    justify-content: center;
+  }
 }

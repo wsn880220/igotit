@@ -123,7 +123,8 @@ function SubtitlePanel({
     onSentenceTranslate,
     translations, // Object
     sentenceTranslations, // Object
-    videoPlayerRef
+    videoPlayerRef,
+    autoScroll = true // 默认为 true
 }) {
     const panelRef = useRef(null);
     const listRef = useRef(null);
@@ -168,7 +169,7 @@ function SubtitlePanel({
 
     // 自动滚动 (Optimized)
     useEffect(() => {
-        if (activeSubRef.current && listRef.current) {
+        if (autoScroll && activeSubRef.current && listRef.current) {
             const list = listRef.current;
             const activeSub = activeSubRef.current;
             const listRect = list.getBoundingClientRect();
@@ -181,19 +182,31 @@ function SubtitlePanel({
                 behavior: 'smooth'
             });
         }
-    }, [currentIndex]); // Only scroll when index changes
+    }, [currentIndex, autoScroll]); // 依赖 currentIndex 和 autoScroll
 
     return (
         <div className="subtitle-panel glass-effect" ref={panelRef}>
             <div className="playback-controls">
                 <button onClick={handleRewind} className="control-button" title="后退 5 秒">
-                    ⏪ -5s
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 12h18M3 6h18M3 18h18M7 12l-4 4v-8l4 4z"/>
+                    </svg>
+                    <span>-5s</span>
                 </button>
                 <button onClick={handlePlayPause} className="control-button play-pause" title="播放/暂停">
-                    ▶️ ⏸
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="6" y="4" width="4" height="16"/>
+                        <rect x="14" y="4" width="4" height="16"/>
+                    </svg>
                 </button>
                 <button onClick={handleForward} className="control-button" title="前进 10 秒">
-                    ⏩ +10s
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 12H3M21 6H3M21 18H3M17 12l4 4v-8l-4 4z"/>
+                    </svg>
+                    <span>+10s</span>
                 </button>
             </div>
 

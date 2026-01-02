@@ -1,33 +1,84 @@
+/* ============================================
+   VIDEO PLAYER COMPONENT STYLES
+   ============================================ */
+
 .video-player-container {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
+
+/* ============================================
+   VIDEO WRAPPER - 简洁卡片
+   ============================================ */
 
 .video-wrapper {
-    position: relative;
-    width: 100%;
-    padding-bottom: 56.25%;
-    /* 16:9 宽高比 */
-    background: var(--bg-secondary);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow-lg);
-    border: 1px solid var(--border-color);
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  background: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-base);
 }
+
+.video-wrapper:hover {
+  box-shadow: var(--shadow-xl);
+}
+
+/* ============================================
+   YOUTUBE PLAYER
+   ============================================ */
 
 #youtube-player {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
 }
 
-/* 响应式 */
+#youtube-player iframe {
+  border-radius: var(--radius-lg);
+}
+
+/* ============================================
+   VIDEO LOADING STATE
+   ============================================ */
+
+.video-wrapper.loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--color-bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 1200px) {
+  .video-wrapper {
+    border-radius: var(--radius-lg);
+  }
+}
+
 @media (max-width: 768px) {
-    .video-wrapper {
-        border-radius: var(--radius-md);
-    }
+  .video-wrapper {
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .video-wrapper {
+    border-radius: var(--radius-sm);
+  }
 }

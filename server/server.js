@@ -3,6 +3,8 @@ import cors from 'cors';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
 // 注释：暂时停用 Google 翻译
 // import { v2 as translateV2 } from '@google-cloud/translate';
 // 注释：暂时停用本地词典
@@ -86,11 +88,55 @@ async function getSubtitlesWithYtDlp(videoId) {
       throw new Error(result.error);
     }
 
-    return result.subtitles;
+    return {
+      subtitles: result.subtitles,
+      title: result.title || null
+    };
   } catch (error) {
     console.error('yt-dlp 错误:', error.message);
     throw error;
   }
+}
+
+// 获取视频标题
+async function getVideoTitle(videoId) {
+  try {
+    const command = `./venv/bin/python3 -c "import yt_dlp; ydl_opts={'quiet':True,'no_warnings':True}; with yt_dlp.YoutubeDL(ydl_opts) as ydl: info = ydl.extract_info(f'https://www.youtube.com/watch?v=${videoId}', download=False); print(info.get('title', 'Unknown'))"`;
+
+    const { stdout } = await execPromise(command, {
+      cwd: '/Users/wangyoudu/Development/Web/igotit',
+      maxBuffer: 1024 * 1024,
+      timeout: 10000
+    });
+
+    return stdout.trim();
+  } catch (error) {
+    console.error('获取视频标题失败:', error.message);
+    return `Video ${videoId}`;
+  }
+}
+
+// 添加到最近视频列表
+function addToRecentVideos(videoId, title) {
+  // 移除已存在的相同视频（如果有）
+  const index = recentVideos.findIndex(v => v.videoId === videoId);
+  if (index !== -1) {
+    recentVideos.splice(index, 1);
+  }
+
+  // 添加到开头
+  recentVideos.unshift({
+    videoId,
+    title,
+    timestamp: Date.now()
+  });
+
+  // 保持最多 5 个
+  if (recentVideos.length > MAX_RECENT_VIDEOS) {
+    recentVideos.pop();
+  }
+
+  console.log(`📝 最近视频列表更新:`, recentVideos.map(v => `${v.videoId}: ${v.title.substring(0, 30)}...`));
 }
 
 // 简单的内存缓存
@@ -98,6 +144,10 @@ const subtitleCache = new Map();
 
 // 翻译缓存：{ videoId: { sentences: Map(), words: Map() } }
 const translationCache = new Map();
+
+// 最近解析的视频列表（最多存储 5 个）
+const recentVideos = [];
+const MAX_RECENT_VIDEOS = 5;
 
 // 智能分批函数
 function splitSubtitlesIntoBatches(subtitles, maxBatchSize = 50) {
@@ -302,14 +352,21 @@ app.post('/api/subtitles', async (req, res) => {
     // 1. 检查缓存
     if (subtitleCache.has(videoId)) {
       console.log(`⚡️ 字幕缓存命中: ${videoId}`);
+      const cached = subtitleCache.get(videoId);
+      // 如果缓存的是对象（包含标题），提取字幕
+      const subtitles = cached.subtitles || cached;
+      const title = cached.title || null;
       return res.json({
         videoId,
-        subtitles: subtitleCache.get(videoId)
+        subtitles,
+        title
       });
     }
 
     // 使用 yt-dlp 获取字幕
-    const subtitles = await getSubtitlesWithYtDlp(videoId);
+    const result = await getSubtitlesWithYtDlp(videoId);
+    const subtitles = result.subtitles;
+    const videoTitle = result.title;
 
     if (!subtitles || subtitles.length === 0) {
       return res.status(404).json({
@@ -319,8 +376,18 @@ app.post('/api/subtitles', async (req, res) => {
 
     console.log(`✅ 成功获取 ${subtitles.length} 条字幕`);
 
-    // 2. 存入缓存
-    subtitleCache.set(videoId, subtitles);
+    // 2. 存入缓存（存储完整对象，包含标题）
+    subtitleCache.set(videoId, {
+      subtitles,
+      title: videoTitle
+    });
+
+    // 返回字幕数据（包含标题）
+    res.json({
+      videoId,
+      subtitles,
+      title: videoTitle
+    });
 
     // 3. 启动后台翻译任务（不等待完成）
     if (zhipuAI) {
@@ -330,12 +397,6 @@ app.post('/api/subtitles', async (req, res) => {
       // });
       console.log(`ℹ️ 批量翻译已禁用，仅支持实时单词翻译`);
     }
-
-    // 返回字幕数据
-    res.json({
-      videoId,
-      subtitles
-    });
 
   } catch (error) {
     console.error('❌ 字幕获取错误:', error.message);
@@ -492,6 +553,92 @@ app.post('/api/translate-sentence', async (req, res) => {
 // 健康检查
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: '服务器运行正常 (使用 yt-dlp)' });
+});
+
+// 获取最近视频列表
+app.get('/api/recent-videos', (req, res) => {
+  res.json({
+    videos: recentVideos.map(v => ({
+      videoId: v.videoId,
+      title: v.title,
+      timestamp: v.timestamp
+    }))
+  });
+});
+
+// 获取视频标题
+app.get('/api/video-title', async (req, res) => {
+  try {
+    const { videoId } = req.query;
+
+    if (!videoId) {
+      return res.status(400).json({ error: '请提供 videoId' });
+    }
+
+    const title = await getVideoTitle(videoId);
+    res.json({ videoId, title });
+  } catch (error) {
+    console.error('获取视频标题失败:', error);
+    res.status(500).json({ error: '获取标题失败' });
+  }
+});
+
+// 获取推荐视频（从配置的频道）
+app.get('/api/recommended-videos', async (req, res) => {
+  try {
+    // 使用绝对路径
+    const channelsConfigPath = '/Users/wangyoudu/Development/Web/igotit/server/channels.json';
+
+    if (!fs.existsSync(channelsConfigPath)) {
+      console.error('频道配置文件不存在:', channelsConfigPath);
+      return res.json({ channels: [] });
+    }
+
+    console.log('读取频道配置文件:', channelsConfigPath);
+    const channelsConfig = JSON.parse(fs.readFileSync(channelsConfigPath, 'utf-8'));
+    console.log('频道配置:', channelsConfig);
+    const MAX_VIDEOS_PER_CHANNEL = 5;
+
+    const channels = await Promise.all(
+      channelsConfig.map(async (channel) => {
+        try {
+          const command = `./venv/bin/yt-dlp --flat-playlist --print "%(id)s|||%(title)s" "${channel.url}" --playlist-end ${MAX_VIDEOS_PER_CHANNEL}`;
+
+          const { stdout } = await execPromise(command, {
+            cwd: '/Users/wangyoudu/Development/Web/igotit',
+            maxBuffer: 1024 * 1024,
+            timeout: 30000
+          });
+
+          const videos = stdout
+            .trim()
+            .split('\n')
+            .filter(line => line.includes('|||'))
+            .slice(0, MAX_VIDEOS_PER_CHANNEL)
+            .map(line => {
+              const [videoId, title] = line.split('|||');
+              return { videoId, title };
+            });
+
+          return {
+            name: channel.name,
+            videos
+          };
+        } catch (error) {
+          console.error(`获取频道 ${channel.name} 视频失败:`, error.message);
+          return {
+            name: channel.name,
+            videos: []
+          };
+        }
+      })
+    );
+
+    res.json({ channels });
+  } catch (error) {
+    console.error('获取推荐视频失败:', error);
+    res.status(500).json({ error: '获取推荐视频失败' });
+  }
 });
 
 // 启动服务器

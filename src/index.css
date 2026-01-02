@@ -1,172 +1,278 @@
+/* ============================================
+   IGotIt - YouTube 字幕学习平台
+   设计系统：温暖的书房
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
 :root {
-  /* 色彩系统 - 深色主题 */
-  --bg-primary: hsl(220, 20%, 10%);
-  --bg-secondary: hsl(220, 18%, 14%);
-  --bg-glass: hsla(220, 18%, 20%, 0.6);
-  --bg-hover: hsla(220, 18%, 25%, 0.8);
+  /* ============================================
+     COLOR PALETTE - 温暖米橙配色
+     ============================================ */
 
-  /* 强调色 */
-  --accent-primary: hsl(280, 80%, 60%);
-  --accent-secondary: hsl(200, 90%, 55%);
-  --accent-gradient: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  /* 主色 - 米色系 */
+  --color-cream: #F5F0E6;
+  --color-cream-light: #FFF8ED;
+  --color-cream-dark: #E8DFD0;
 
-  /* 文字颜色 */
-  --text-primary: hsl(0, 0%, 98%);
-  --text-secondary: hsl(0, 0%, 70%);
-  --text-muted: hsl(0, 0%, 50%);
+  /* 强调色 - 橙色系 */
+  --color-orange: #FF6B35;
+  --color-orange-light: #FF8C5A;
+  --color-orange-dark: #E55A2B;
 
-  /* 高亮和强调 */
-  --highlight-bg: hsla(50, 100%, 65%, 0.25);
-  --highlight-text: hsl(50, 100%, 70%);
+  /* 文字色 - 深棕系 */
+  --color-text-primary: #2C1810;
+  --color-text-secondary: #6B5A52;
+  --color-text-muted: #9A8B82;
 
-  /* 翻译弹出框 */
-  --translation-bg: hsl(280, 70%, 50%);
-  --translation-text: hsl(0, 0%, 100%);
+  /* 背景色 */
+  --color-bg: #F5F0E6;
+  --color-bg-card: #FFFFFF;
+  --color-bg-input: #FFFBF7;
 
-  /* 边框和分割线 */
-  --border-color: hsla(0, 0%, 100%, 0.1);
+  /* 边框色 */
+  --color-border: #E8DFD0;
+  --color-border-light: #F0E8DC;
+
+  /* 功能色 */
+  --color-success: #4A854D;
+  --color-error: #C64444;
+  --color-warning: #D4943C;
 
   /* 阴影 */
-  --shadow-sm: 0 2px 8px hsla(0, 0%, 0%, 0.2);
-  --shadow-md: 0 4px 16px hsla(0, 0%, 0%, 0.3);
-  --shadow-lg: 0 8px 32px hsla(0, 0%, 0%, 0.4);
+  --shadow-sm: 0 1px 3px rgba(44, 24, 16, 0.06);
+  --shadow-md: 0 4px 12px rgba(44, 24, 16, 0.08);
+  --shadow-lg: 0 8px 24px rgba(44, 24, 16, 0.10);
+  --shadow-xl: 0 16px 48px rgba(44, 24, 16, 0.12);
 
-  /* 间距 */
-  --spacing-xs: 0.5rem;
-  --spacing-sm: 1rem;
-  --spacing-md: 1.5rem;
-  --spacing-lg: 2rem;
-  --spacing-xl: 3rem;
+  /* ============================================
+     TYPOGRAPHY - 专业字体系统
+     ============================================ */
 
-  /* 圆角 */
-  --radius-sm: 8px;
-  --radius-md: 12px;
+  /* 标题字体 - 优雅衬线 */
+  --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+
+  /* 正文字体 - 清晰无衬线 */
+  --font-body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* 字号系统 */
+  --text-xs: 0.75rem;    /* 12px */
+  --text-sm: 0.875rem;   /* 14px */
+  --text-base: 1rem;     /* 16px */
+  --text-lg: 1.125rem;   /* 18px */
+  --text-xl: 1.25rem;    /* 20px */
+  --text-2xl: 1.5rem;    /* 24px */
+  --text-3xl: 1.875rem;  /* 30px */
+  --text-4xl: 2.25rem;   /* 36px */
+  --text-5xl: 3rem;      /* 48px */
+  --text-6xl: 4rem;      /* 64px */
+
+  /* 字重 */
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* 行高 */
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  /* ============================================
+     SPACING - 8px 网格系统
+     ============================================ */
+
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+  --space-20: 5rem;     /* 80px */
+  --space-24: 6rem;     /* 96px */
+
+  /* ============================================
+     BORDER RADIUS - 适度圆角
+     ============================================ */
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
   --radius-lg: 16px;
-  --radius-xl: 24px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
 
-  /* 字体 */
-  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* ============================================
+     TRANSITION - 平滑过渡
+     ============================================ */
+
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-* {
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
 body {
-  font-family: var(--font-primary);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  line-height: 1.6;
-  overflow-x: hidden;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-normal);
+  color: var(--color-text-primary);
+  background: var(--color-bg);
   min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 #root {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-/* 自定义滚动条 */
+/* ============================================
+   TYPOGRAPHY DEFAULTS
+   ============================================ */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-tight);
+  color: var(--color-text-primary);
+}
+
+h1 { font-size: var(--text-6xl); }
+h2 { font-size: var(--text-4xl); }
+h3 { font-size: var(--text-2xl); }
+h4 { font-size: var(--text-xl); }
+
+p {
+  line-height: var(--leading-relaxed);
+}
+
+/* ============================================
+   CUSTOM SCROLLBAR - 细致优雅
+   ============================================ */
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--bg-glass);
-  border-radius: 4px;
-  transition: background 0.3s;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  transition: background var(--transition-base);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--bg-hover);
+  background: var(--color-text-muted);
 }
 
-/* 按钮通用样式 */
-button {
-  font-family: var(--font-primary);
-  cursor: pointer;
-  border: none;
-  outline: none;
-  transition: all 0.3s ease;
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
 }
 
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+/* ============================================
+   ANIMATIONS
+   ============================================ */
 
-/* 输入框通用样式 */
-input {
-  font-family: var(--font-primary);
-  outline: none;
-  transition: all 0.3s ease;
-}
-
-/* 工具类 */
-.gradient-text {
-  background: var(--accent-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.glass-effect {
-  background: var(--bg-glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border-color);
-}
-
-/* 动画 */
 @keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(10px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
   }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
 
-  100% {
-    background-position: 1000px 0;
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
 @keyframes pulse {
-
-  0%,
-  100% {
+  0%, 100% {
     opacity: 1;
   }
-
   50% {
-    opacity: 0.6;
+    opacity: 0.7;
   }
 }
 
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
 .fade-in {
-  animation: fadeIn 0.4s ease-out;
+  animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 响应式断点 */
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
 @media (max-width: 768px) {
   :root {
-    --spacing-md: 1rem;
-    --spacing-lg: 1.5rem;
-    --spacing-xl: 2rem;
+    --text-6xl: 3.5rem;
+    --text-5xl: 3rem;
+    --text-4xl: 2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

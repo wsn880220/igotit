@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import Lottie from 'lottie-react';
+import loadingAnimation from '../icons/loading.json';
 import './UrlInput.css';
 
 function UrlInput({ onSubmit, isLoading, error }) {
@@ -12,7 +14,7 @@ function UrlInput({ onSubmit, isLoading, error }) {
     };
 
     return (
-        <div className="url-input-container">
+        <>
             <form onSubmit={handleSubmit} className="url-form">
                 <div className="input-wrapper">
                     <input
@@ -29,9 +31,15 @@ function UrlInput({ onSubmit, isLoading, error }) {
                         disabled={isLoading || !url.trim()}
                     >
                         {isLoading ? (
-                            <span className="loading-spinner">⏳</span>
+                            <Lottie
+                                animationData={loadingAnimation}
+                                className="loading-spinner"
+                                loop={true}
+                                autoplay={true}
+                                style={{ width: 24, height: 24 }}
+                            />
                         ) : (
-                            '加载字幕'
+                            '开始磨'
                         )}
                     </button>
                 </div>
@@ -43,7 +51,7 @@ function UrlInput({ onSubmit, isLoading, error }) {
                     {error}
                 </div>
             )}
-        </div>
+        </>
     );
 }
 

@@ -1,4 +1,6 @@
 import React from 'react';
+import Lottie from 'lottie-react';
+import loadingAnimation from '../icons/loading.json';
 import './SkeletonLoader.css';
 
 function SkeletonLoader() {
@@ -28,6 +30,14 @@ function SkeletonLoader() {
                 <div className="skeleton-subtitle-item">
                     <div className="skeleton-time"></div>
                     <div className="skeleton-text"></div>
+                </div>
+                <div className="skeleton-loading">
+                    <Lottie
+                        animationData={loadingAnimation}
+                        loop={true}
+                        autoplay={true}
+                        style={{ width: 60, height: 60 }}
+                    />
                 </div>
             </div>
         </div>

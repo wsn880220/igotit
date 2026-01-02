@@ -1,0 +1,144 @@
+.recent-videos {
+  max-width: 680px;
+  width: 100%;
+  margin: var(--space-8) auto 0;
+}
+
+.recent-videos-loading {
+  text-align: center;
+  color: var(--color-text-secondary);
+  padding: var(--space-4);
+}
+
+.recent-videos-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.recent-videos-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.clear-history-button {
+  background: none;
+  border: none;
+  font-size: var(--text-xl);
+  cursor: pointer;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.clear-history-button:hover {
+  background: var(--color-cream-light);
+  transform: scale(1.1);
+}
+
+.clear-history-button:active {
+  transform: scale(0.95);
+}
+
+.recent-videos-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.recent-video-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3);
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+}
+
+.recent-video-item:hover {
+  background: var(--color-cream-light);
+  transform: translateX(4px);
+  box-shadow: var(--shadow-md);
+}
+
+.recent-video-thumbnail {
+  width: 120px;
+  height: 68px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+  background: var(--color-bg);
+}
+
+.recent-video-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.recent-video-title {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.4;
+}
+
+.recent-video-time {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 768px) {
+  .recent-videos {
+    margin: var(--space-6) auto 0;
+  }
+
+  .recent-video-thumbnail {
+    width: 100px;
+    height: 56px;
+  }
+
+  .recent-video-title {
+    font-size: var(--text-sm);
+  }
+}
+
+/* 推荐内容样式 */
+.recommended-channels {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.recommended-channel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.channel-name {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  padding-left: var(--space-1);
+}

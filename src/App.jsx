@@ -4,6 +4,8 @@ import UrlInput from './components/UrlInput';
 import VideoPlayer from './components/VideoPlayer';
 import SubtitlePanel from './components/SubtitlePanel';
 import SkeletonLoader from './components/SkeletonLoader';
+import RecentVideos, { addRecentVideo } from './components/RecentVideos';
+import RecommendedVideos from './components/RecommendedVideos';
 import './App.css';
 
 function App() {
@@ -24,7 +26,8 @@ function App() {
     const [translations, setTranslations] = useState({});
     const [sentenceTranslations, setSentenceTranslations] = useState({}); // 句子翻译
     const [showVideo, setShowVideo] = useState(true);
-    const [pauseOnTranslate, setPauseOnTranslate] = useState(true); // 翻译时是否暂停
+    const [pauseOnTranslate, setPauseOnTranslate] = useState(false); // 翻译时是否暂停
+    const [autoScroll, setAutoScroll] = useState(true); // 播放时是否自动滚动
 
     // 处理 URL 提交
     const handleUrlSubmit = async (url) => {
@@ -50,6 +53,92 @@ function App() {
             setVideoId(data.videoId);
             setSubtitles(data.subtitles);
             setError('');
+
+            // 如果有标题，直接保存到最近视频列表
+            if (data.title) {
+                addRecentVideo(data.videoId, data.title);
+            } else {
+                // 没有标题时，异步获取
+                fetchVideoTitleAndSave(data.videoId);
+            }
+        } catch (err) {
+            setError(err.message);
+            setVideoId(null);
+            setSubtitles([]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // 获取视频标题并保存到 localStorage
+    const fetchVideoTitleAndSave = async (videoId) => {
+        // 备用方案：使用 YouTube oEmbed API（无需 API key）
+        try {
+            const oembedResponse = await fetch(
+                `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
+            );
+            if (oembedResponse.ok) {
+                const oembedData = await oembedResponse.json();
+                if (oembedData.title) {
+                    addRecentVideo(videoId, oembedData.title);
+                    console.log(`✅ 通过 oEmbed API 获取标题: ${oembedData.title}`);
+                    return;
+                }
+            }
+        } catch (oembedError) {
+            console.log('oEmbed API 失败，尝试后端获取:', oembedError.message);
+        }
+
+        // 备用方案2：调用后端 API
+        try {
+            const response = await fetch(`/api/video-title?videoId=${videoId}`);
+            const data = await response.json();
+            if (data.title) {
+                addRecentVideo(videoId, data.title);
+                return;
+            }
+        } catch (error) {
+            console.error('后端获取标题也失败:', error);
+        }
+
+        // 最终备用：使用 videoId 作为标题
+        addRecentVideo(videoId, `Video ${videoId}`);
+    };
+
+    // 处理从最近视频列表中选择视频
+    const handleRecentVideoSelect = async (selectedVideoId) => {
+        setIsLoading(true);
+        setError('');
+        setVideoUrl(`https://www.youtube.com/watch?v=${selectedVideoId}`);
+
+        try {
+            const response = await fetch('/api/subtitles', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    url: `https://www.youtube.com/watch?v=${selectedVideoId}`
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || '字幕获取失败');
+            }
+
+            setVideoId(data.videoId);
+            setSubtitles(data.subtitles);
+            setError('');
+
+            // 如果有标题，直接保存到最近视频列表
+            if (data.title) {
+                addRecentVideo(data.videoId, data.title);
+            } else {
+                // 没有标题时，异步获取
+                fetchVideoTitleAndSave(data.videoId);
+            }
         } catch (err) {
             setError(err.message);
             setVideoId(null);
@@ -60,6 +149,17 @@ function App() {
     };
 
     // 移除 localStorage 缓存逻辑，实现刷新即焚
+
+    // 重置到缺省状态
+    const handleReset = () => {
+        setVideoId(null);
+        setVideoUrl('');
+        setSubtitles([]);
+        setTranslations({});
+        setSentenceTranslations({});
+        setError('');
+        setShowVideo(true);
+    };
 
     // 清除缓存（测试用）
     const handleClearCache = async () => {
@@ -275,10 +375,13 @@ function App() {
             {/* 标题和搜索框统一结构 */}
             <div className={`header-search-wrapper ${isLoading || videoId ? 'compact' : ''}`}>
                 <header className="app-header">
-                    <h1 className="app-title">
-                        <span className="gradient-text">IgotIt</span>
+                    <h1 className={`app-title ${videoId ? 'clickable' : ''}`} onClick={videoId ? handleReset : undefined}>
+                        <img src="/logo.png" alt="磨耳朵 Logo" className="app-title-logo" />
+                        <span>磨耳朵</span>
                     </h1>
-                    <p className="app-subtitle">通过 YouTube 学习英语</p>
+                    <div className="app-subtitle-row">
+                        <p className="app-subtitle">粘贴一个 YouTube 视频链接，即刻开始磨耳朵</p>
+                    </div>
                 </header>
 
                 <div className="url-input-container">
@@ -290,12 +393,19 @@ function App() {
                 </div>
             </div>
 
+            {!isLoading && !videoId && (
+                <>
+                    <RecentVideos onVideoSelect={handleRecentVideoSelect} />
+                    <RecommendedVideos onVideoSelect={handleRecentVideoSelect} />
+                </>
+            )}
+
             {(isLoading || videoId) && (
                 <>
                     {isLoading ? (
                         <SkeletonLoader />
                     ) : (
-                        <div className="content-container">
+                        <div className={`content-container ${!showVideo ? 'video-hidden' : ''}`}>
                             <div className={`video-section ${!showVideo ? 'hidden' : ''}`}>
                                 <VideoPlayer
                                     ref={videoPlayerRef}
@@ -315,6 +425,14 @@ function App() {
                                                 onChange={(e) => setPauseOnTranslate(e.target.checked)}
                                             />
                                             <span>翻译时暂停</span>
+                                        </label>
+                                        <label className="pause-toggle">
+                                            <input
+                                                type="checkbox"
+                                                checked={autoScroll}
+                                                onChange={(e) => setAutoScroll(e.target.checked)}
+                                            />
+                                            <span>自动滚动</span>
                                         </label>
                                         <button
                                             className="clear-cache-btn"
@@ -339,24 +457,16 @@ function App() {
                                     onSeek={handleSeek}
                                     onWordClick={handleWordClick}
                                     onTranslationClick={handleTranslationClick}
-
                                     onSentenceTranslate={handleSentenceTranslate}
                                     translations={translations}
                                     sentenceTranslations={sentenceTranslations}
                                     videoPlayerRef={videoPlayerRef}
+                                    autoScroll={autoScroll}
                                 />
                             </div>
                         </div>
                     )}
                 </>
-            )}
-
-            {!videoId && !isLoading && !error && (
-                <div className="empty-state">
-                    <div className="empty-icon">📺</div>
-                    <h2>开始你的学习之旅</h2>
-                    <p>粘贴一个 YouTube 视频链接，即刻开始</p>
-                </div>
             )}
         </div>
     );
