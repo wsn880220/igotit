@@ -68,8 +68,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD node -e "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
-# 设置环境变量
-ENV NODE_ENV=production
-
-# 启动命令
-CMD ["node", "server.js"]
+# 启动命令，确保 NODE_ENV 正确设置
+CMD ["sh", "-c", "NODE_ENV=production node server.js"]

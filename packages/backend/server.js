@@ -656,9 +656,14 @@ app.get('/api/recommended-videos', async (req, res) => {
 });
 
 // 提供前端静态文件（生产环境）
-if (process.env.NODE_ENV === 'production') {
-  const frontendPath = path.join(PROJECT_ROOT, 'dist');
+console.log('🔍 调试信息:');
+console.log('  - NODE_ENV:', process.env.NODE_ENV);
+console.log('  - PROJECT_ROOT:', PROJECT_ROOT);
+const frontendPath = path.join(PROJECT_ROOT, 'dist');
+console.log('  - frontendPath:', frontendPath);
+console.log('  - dist 存在?', fs.existsSync(frontendPath));
 
+if (process.env.NODE_ENV === 'production') {
   if (fs.existsSync(frontendPath)) {
     console.log('📦 提供前端静态文件:', frontendPath);
     app.use(express.static(frontendPath));
@@ -672,6 +677,8 @@ if (process.env.NODE_ENV === 'production') {
   } else {
     console.log('⚠️  前端构建文件不存在，仅提供 API 服务');
   }
+} else {
+  console.log('⚠️  非生产环境，不提供静态文件');
 }
 
 // 启动服务器
