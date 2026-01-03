@@ -53,13 +53,13 @@ RUN pip3 install --break-system-packages --no-cache-dir yt-dlp
 COPY packages/backend/server.js ./
 COPY packages/backend/channels.json ./
 COPY packages/backend/get_subtitles.py ./
-COPY packages/backend/.env.example* ./ 2>/dev/null || true
+COPY packages/backend/.env.example* ./
 
 # 从前端构建阶段复制构建产物
 COPY --from=frontend-builder /build/packages/frontend/dist ./dist
 
 # 设置 Python 脚本为可执行
-RUN chmod +x get_subtitles.py 2>/dev/null || true
+RUN chmod +x get_subtitles.py
 
 # 使用内置的非 root 用户 'node' (UID 1000)
 RUN chown -R node:node /app
