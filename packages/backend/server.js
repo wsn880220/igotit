@@ -615,13 +615,15 @@ app.get('/api/recommended-videos', async (req, res) => {
     const channels = await Promise.all(
       channelsConfig.map(async (channel) => {
         try {
-          const ytdlpCmd = fs.existsSync(path.join(REPO_ROOT, 'venv', 'bin', 'yt-dlp'))
-            ? path.join(REPO_ROOT, 'venv', 'bin', 'yt-dlp')
-            : 'yt-dlp';
+          // 优先查找本地 venv (开发环境)，否则使用全局命令 (Docker/生产环境)
+          const localYtDlp = path.join(REPO_ROOT, 'venv', 'bin', 'yt-dlp');
+          const ytdlpCmd = fs.existsSync(localYtDlp) ? localYtDlp : 'yt-dlp';
+
           const command = `${ytdlpCmd} --flat-playlist --print "%(id)s|||%(title)s" "${channel.url}" --playlist-end ${MAX_VIDEOS_PER_CHANNEL}`;
 
           const { stdout } = await execPromise(command, {
-            cwd: REPO_ROOT,
+            // 如果是开发环境且 venv 存在，在项目根目录执行；否则在当前目录
+            cwd: fs.existsSync(localYtDlp) ? REPO_ROOT : process.cwd(),
             maxBuffer: 1024 * 1024,
             timeout: 30000
           });

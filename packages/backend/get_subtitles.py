@@ -48,7 +48,14 @@ def get_subtitles(video_id):
 
     # 获取脚本所在目录
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    venv_ytdlp = os.path.join(os.path.dirname(os.path.dirname(script_dir)), 'venv', 'bin', 'yt-dlp')
+    
+    # 尝试查找本地 venv 中的 yt-dlp
+    venv_ytdlp_path = os.path.join(os.path.dirname(os.path.dirname(script_dir)), 'venv', 'bin', 'yt-dlp')
+    if os.path.exists(venv_ytdlp_path):
+        venv_ytdlp = venv_ytdlp_path
+    else:
+        # 否则使用系统路径的 yt-dlp (Docker 环境)
+        venv_ytdlp = 'yt-dlp'
 
     # 获取 cookies 文件（支持本地文件或环境变量）
     cookies_file = get_cookies_file()
