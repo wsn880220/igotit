@@ -20,7 +20,9 @@ const execPromise = promisify(exec);
 
 // 获取项目根目录（适配 Zeabur 部署）
 const PROJECT_ROOT = process.cwd();
-console.log('📁 项目根目录:', PROJECT_ROOT);
+const PARENT_DIR = path.resolve(PROJECT_ROOT, '..');  // 项目根目录（venv 所在位置）
+console.log('📁 当前目录 (PROJECT_ROOT):', PROJECT_ROOT);
+console.log('📁 父目录 (PARENT_DIR):', PARENT_DIR);
 
 // 注释：暂时停用 Google 翻译
 // let googleTranslate = null;
@@ -72,15 +74,15 @@ async function getSubtitlesWithYtDlp(videoId) {
   try {
     console.log(`正在使用 yt-dlp 获取视频字幕: ${videoId}`);
 
-    // 调用 Python 脚本（自动检测 Python 路径）
-    const pythonCmd = fs.existsSync(path.join(PROJECT_ROOT, 'venv', 'bin', 'python3'))
-      ? './venv/bin/python3'
+    // 调用 Python 脚本（自动检测 Python 路径，venv 在父目录）
+    const pythonCmd = fs.existsSync(path.join(PARENT_DIR, 'venv', 'bin', 'python3'))
+      ? path.join(PARENT_DIR, 'venv', 'bin', 'python3')
       : 'python3';
-    const scriptPath = path.join(PROJECT_ROOT, 'get_subtitles.py');
+    const scriptPath = path.join(PARENT_DIR, 'get_subtitles.py');
     const command = `${pythonCmd} "${scriptPath}" "${videoId}"`;
 
     const { stdout, stderr } = await execPromise(command, {
-      cwd: PROJECT_ROOT,
+      cwd: PARENT_DIR,
       maxBuffer: 10 * 1024 * 1024, // 10MB buffer
       timeout: 30000 // 30 秒超时
     });
@@ -109,13 +111,13 @@ async function getSubtitlesWithYtDlp(videoId) {
 // 获取视频标题
 async function getVideoTitle(videoId) {
   try {
-    const pythonCmd = fs.existsSync(path.join(PROJECT_ROOT, 'venv', 'bin', 'python3'))
-      ? './venv/bin/python3'
+    const pythonCmd = fs.existsSync(path.join(PARENT_DIR, 'venv', 'bin', 'python3'))
+      ? path.join(PARENT_DIR, 'venv', 'bin', 'python3')
       : 'python3';
     const command = `${pythonCmd} -c "import yt_dlp; ydl_opts={'quiet':True,'no_warnings':True}; with yt_dlp.YoutubeDL(ydl_opts) as ydl: info = ydl.extract_info(f'https://www.youtube.com/watch?v=${videoId}', download=False); print(info.get('title', 'Unknown'))"`;
 
     const { stdout } = await execPromise(command, {
-      cwd: PROJECT_ROOT,
+      cwd: PARENT_DIR,
       maxBuffer: 1024 * 1024,
       timeout: 10000
     });
@@ -613,13 +615,13 @@ app.get('/api/recommended-videos', async (req, res) => {
     const channels = await Promise.all(
       channelsConfig.map(async (channel) => {
         try {
-          const ytdlpCmd = fs.existsSync(path.join(PROJECT_ROOT, 'venv', 'bin', 'yt-dlp'))
-            ? './venv/bin/yt-dlp'
+          const ytdlpCmd = fs.existsSync(path.join(PARENT_DIR, 'venv', 'bin', 'yt-dlp'))
+            ? path.join(PARENT_DIR, 'venv', 'bin', 'yt-dlp')
             : 'yt-dlp';
           const command = `${ytdlpCmd} --flat-playlist --print "%(id)s|||%(title)s" "${channel.url}" --playlist-end ${MAX_VIDEOS_PER_CHANNEL}`;
 
           const { stdout } = await execPromise(command, {
-            cwd: PROJECT_ROOT,
+            cwd: PARENT_DIR,
             maxBuffer: 1024 * 1024,
             timeout: 30000
           });

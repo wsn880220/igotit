@@ -1,22 +1,41 @@
+# 依赖
 node_modules/
+venv/
+
+# 构建产物
 dist/
 build/
-.DS_Store
-*.log
+
+# 环境变量
 .env
 .env.local
 
-# Python 虚拟环境
-venv/
+# 日志
+*.log
+
+# 系统文件
+.DS_Store
+
+# Python
 *.pyc
 __pycache__/
 
-# yt-dlp 临时文件
+# 字幕缓存
 subtitle_*.json3
 subtitle_*.en.*
 *.part
+
+# Cookies（敏感信息）
 cookies.txt
 
 # 数据库文件（太大无法上传到 GitHub）
 server/data/
 *.db
+
+# Monorepo 残留
+packages/
+pnpm-lock.yaml
+pnpm-workspace.yaml
+
+# Zeabur 配置（如果不使用）
+.zeabur/
