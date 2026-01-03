@@ -54,7 +54,10 @@ function RecommendedVideos({ onVideoSelect }) {
 
     const fetchRecommendedVideos = async () => {
         try {
-            const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+            let API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+            if (API_BASE && !API_BASE.startsWith('http')) {
+                API_BASE = `https://${API_BASE}`;
+            }
             const response = await fetch(`${API_BASE}/api/recommended-videos`);
             const data = await response.json();
             const newChannels = data.channels || [];

@@ -31,7 +31,11 @@ function App() {
     const [isPlaying, setIsPlaying] = useState(false); // 播放状态
 
     // 从环境变量获取 API 基础地址（用于分离部署），开发环境默认为空（使用代理）
-    const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+    let API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+    // 容错处理：如果用户忘了加 https://，自动补全
+    if (API_BASE && !API_BASE.startsWith('http')) {
+        API_BASE = `https://${API_BASE}`;
+    }
 
     // 处理 URL 提交
     const handleUrlSubmit = async (url) => {
