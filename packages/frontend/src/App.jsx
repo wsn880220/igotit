@@ -30,6 +30,9 @@ function App() {
     const [autoScroll, setAutoScroll] = useState(true); // 播放时是否自动滚动
     const [isPlaying, setIsPlaying] = useState(false); // 播放状态
 
+    // 从环境变量获取 API 基础地址（用于分离部署），开发环境默认为空（使用代理）
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+
     // 处理 URL 提交
     const handleUrlSubmit = async (url) => {
         setIsLoading(true);
@@ -37,7 +40,7 @@ function App() {
         setVideoUrl(url);
 
         try {
-            const response = await fetch('/api/subtitles', {
+            const response = await fetch(`${API_BASE}/api/subtitles`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

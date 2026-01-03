@@ -1,58 +1,51 @@
 # 🚀 IGotIt 部署指南 (Zeabur)
 
-本文档详细介绍了 IGotIt 项目在 Zeabur 上的部署架构和操作步骤。
+本文档提供两种部署方案。**强烈推荐方案二：前后端分离部署**，因为它最稳定、最不容易出错。
 
-## 🏗 部署架构：单体合并部署 (Unified Service)
+---
 
-为了简化部署和降低成本，本项目采用**前后端合并**的策略：
+## ✅ 方案二：前后端分离部署 (最推荐)
 
-1.  **构建阶段**： Docker 构建时，先在一个临时容器里编译前端 React 代码，生成静态文件 (`dist` 文件夹)。
-2.  **合并阶段**： 将生成的 `dist` 文件夹复制到后端容器中。
-3.  **运行阶段**： 启动 Node.js 后端。
-    *   访问 `/api/*` -> 处理 API 请求
-    *   访问 `/` -> 返回前端页面
+这个方案将 API 服务和前端页面分开部署，互不干扰，彻底解决 Monorepo 路径报错问题。
 
-这样你只需要在 Zeabur 上部署**一个服务**，就能同时拥有前端和后端。
+### 1. 部署后端 (Backend)
+1.  在 Zeabur 创建新服务 (Git)。
+2.  **Settings -> Root Directory**: `/packages/backend`
+3.  **Environment Variables**:
+    *   `YOUTUBE_COOKIES_BASE64`: (你的 Cookies Base64)
+4.  等待部署成功，复制服务域名 (例如: `backend-xxx.zeabur.app`)。
 
-## 🛠 配置文件说明
+### 2. 配置前端连接
+1.  在本地修改前端配置或环境变量。如果是 Zeabur，最简单的方法是在 Zeabur 前端服务的设置里填。
+2.  (本地测试可选) 在 `packages/frontend/.env` 中添加 `VITE_API_BASE_URL=http://localhost:3000`。
 
-*   **`Dockerfile` (根目录)**： 核心部署文件。定义了如何安装 Node.js、Python (yt-dlp) 环境，以及如何构建前后端。
-*   **`zbpack.json`**： (如果有) Zeabur 的配置文件，用于明确指定构建方式。
+### 3. 部署前端 (Frontend)
+1.  在 Zeabur 创建另一个新服务 (Git)。
+2.  **Settings -> Root Directory**: `/packages/frontend`
+3.  **Environment Variables**:
+    *   `VITE_API_BASE_URL`: `https://backend-xxx.zeabur.app` (填你第一步拿到的域名，注意要有 https://)
+4.  Zeabur 会自动识别 React 项目并部署。
 
-## ⚙️ 环境变量配置
+这样，用户访问前端 (例如 `frontend-xxx.zeabur.app`)，前端会自动去请求 `backend-xxx.zeabur.app` 获取数据。
 
-在 Zeabur 的 **Service Settings -> Environment Variables** 中，必须配置以下变量：
+---
 
-| 变量名 | 说明 | 示例值 |
-| :--- | :--- | :--- |
-| `YOUTUBE_COOKIES_BASE64` | **(必须)** YouTube 登录凭证 Base64 | `(一长串字符)` |
-| `ZHIPU_AI_API_KEY` | **(可选)** 智谱 AI 翻译 Key | `sk-xxx` |
-| `PORT` | **(自动)** 服务端口 | `3000` (无需手动设置) |
+## ⚠️ 方案一：单体合并部署 (Legacy)
 
-### 如何获取 `YOUTUBE_COOKIES_BASE64` ?
-在本地终端运行：
-```bash
-base64 -i cookies.txt | tr -d '\n'
-```
-将输出的字符串填入 Zeabur。
+将前端打包进后端容器，统一部署。
+*   **优点**: 只有一个域名，省钱。
+*   **缺点**: 构建路径容易出错。
 
-## ❓ 常见问题 (FAQ)
+如果想用此方案，请确保根目录的 `Dockerfile` 配置正确，并设置 Zeabur Root Directory 为项目根目录。
 
-### Q: 构建失败，提示 `COPY packages/frontend/... not found`
-**原因**：Zeabur 构建上下文没在根目录。
-**解决**：确保 `Dockerfile` 在根目录，且 Zeabur 的 **Root Directory** 设置为自动检测或 `/`。
+---
 
-### Q: 运行报错 `useradd: UID 1000 is not unique`
-**原因**：基础镜像用户冲突。
-**解决**：代码已修复 (Commit `0cc2c39`). 请确保部署的是最新 commit。
+## ❓ 常见问题
 
-### Q: 视频无法下载/获取字幕失败
-**原因**：Cookies 过期或 IP 被封。
-**解决**：
-1. 更新本地 `cookies.txt` 并重新生成 Base64 更新到环境变量。
-2. 确保 Zeabur 服务的网络能访问 YouTube (Zeabur 服务器通常没问题)。
+### Q: "Network Error" / 前端连不上后端
+**原因**: 前端不知道后端地址，请求发到自己身上了。
+**解决**: 检查前端服务的环境变量 `VITE_API_BASE_URL` 是否正确填写了后端的公网地址。
 
-## 🔄 重新部署
-
-每次推送到 `main` 分支，Zeabur 会自动重新部署。
-如果需要手动重试：进入 Zeabur 控制台 -> Deployments -> Redeploy。
+### Q: 跨域错误 (CORS)
+**原因**: 后端不允许前端域名的请求。
+**解决**: 确保 `server.js` 中配置了 `app.use(cors())` (已默认开启)。
