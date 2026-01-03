@@ -95,7 +95,7 @@ function App() {
 
         // 备用方案2：调用后端 API
         try {
-            const response = await fetch(`/api/video-title?videoId=${videoId}`);
+            const response = await fetch(`${API_BASE}/api/video-title?videoId=${videoId}`);
             const data = await response.json();
             if (data.title) {
                 addRecentVideo(videoId, data.title);
@@ -116,7 +116,7 @@ function App() {
         setVideoUrl(`https://www.youtube.com/watch?v=${selectedVideoId}`);
 
         try {
-            const response = await fetch('/api/subtitles', {
+            const response = await fetch(`${API_BASE}/api/subtitles`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -177,7 +177,7 @@ function App() {
         }
 
         try {
-            const response = await fetch('/api/clear-cache', {
+            const response = await fetch(`${API_BASE}/api/clear-cache`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -241,7 +241,7 @@ function App() {
         console.log('🔤 翻译单词:', cleanWord, '在句子:', sentence.substring(0, 30) + '...');
 
         try {
-            const response = await fetch('/api/translate?simple=true', {
+            const response = await fetch(`${API_BASE}/api/translate?simple=true`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -295,7 +295,7 @@ function App() {
         console.log('📖 查询详细语义:', cleanWord);
 
         try {
-            const response = await fetch('/api/translate?detailed=true', {
+            const response = await fetch(`${API_BASE}/api/translate?detailed=true`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -338,7 +338,7 @@ function App() {
         console.log('📝 翻译句子:', text.substring(0, 30) + '...');
 
         try {
-            const response = await fetch('/api/translate-sentence', {
+            const response = await fetch(`${API_BASE}/api/translate-sentence`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
