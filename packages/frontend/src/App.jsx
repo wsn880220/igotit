@@ -40,6 +40,7 @@ function App() {
         setVideoUrl(url);
 
         try {
+            console.log(`📡 发起请求: ${API_BASE}/api/subtitles`);
             const response = await fetch(`${API_BASE}/api/subtitles`, {
                 method: 'POST',
                 headers: {
@@ -48,10 +49,22 @@ function App() {
                 body: JSON.stringify({ url }),
             });
 
-            const data = await response.json();
+            console.log(`⬅️ 响应状态: ${response.status} ${response.statusText}`);
+
+            // 先读取文本，以便调试
+            const text = await response.text();
+            console.log('📄 响应内容(前100字符):', text.substring(0, 100));
+
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error('❌ JSON 解析失败，原始响应:', text);
+                throw new Error(response.status === 404 ? 'API 地址错误 (404)' : '后端返回了非 JSON 格式的内容');
+            }
 
             if (!response.ok) {
-                throw new Error(data.error || '字幕获取失败');
+                throw new Error(data.error || `请求失败 (${response.status})`);
             }
 
             setVideoId(data.videoId);
