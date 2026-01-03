@@ -1,9 +1,0 @@
-# Zeabur 使用的 .dockerignore
-node_modules/
-*.log
-.env
-.env.local
-venv/
-__pycache__/
-*.pyc
-.DS_Store

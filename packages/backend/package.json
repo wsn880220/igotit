@@ -1,7 +1,8 @@
 {
-  "name": "igotit-server",
+  "name": "igotit-backend",
   "version": "1.0.0",
-  "description": "YouTube subtitle extraction and translation API server",
+  "private": true,
+  "description": "IGotIt Backend - YouTube subtitle extraction and translation API server",
   "main": "server.js",
   "type": "module",
   "scripts": {

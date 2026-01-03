@@ -657,12 +657,43 @@ app.get('/api/recommended-videos', async (req, res) => {
   }
 });
 
+// 提供前端静态文件（生产环境）
+console.log('🔍 调试信息:');
+console.log('  - NODE_ENV:', process.env.NODE_ENV);
+console.log('  - PROJECT_ROOT:', PROJECT_ROOT);
+const frontendPath = path.join(PROJECT_ROOT, 'dist');
+console.log('  - frontendPath:', frontendPath);
+console.log('  - dist 存在?', fs.existsSync(frontendPath));
+
+if (process.env.NODE_ENV === 'production') {
+  if (fs.existsSync(frontendPath)) {
+    console.log('📦 提供前端静态文件:', frontendPath);
+    app.use(express.static(frontendPath));
+
+    // SPA 路由支持：所有非 API 路由都返回 index.html
+    app.get('*', (req, res) => {
+      if (!req.path.startsWith('/api')) {
+        res.sendFile(path.join(frontendPath, 'index.html'));
+      }
+    });
+  } else {
+    console.log('⚠️  前端构建文件不存在，仅提供 API 服务');
+  }
+} else {
+  console.log('⚠️  非生产环境，不提供静态文件');
+}
+
 // 启动服务器
 app.listen(PORT, () => {
   console.log(`\n🚀 服务器已启动在 http://localhost:${PORT}`);
   console.log(`📝 字幕 API (yt-dlp): POST http://localhost:${PORT}/api/subtitles`);
   console.log(`🎬 演示 API: POST http://localhost:${PORT}/api/subtitles/demo`);
-  console.log(`🔤 翻译 API: POST http://localhost:${PORT}/api/translate\n`);
+  console.log(`🔤 翻译 API: POST http://localhost:${PORT}/api/translate`);
+  if (process.env.NODE_ENV === 'production') {
+    console.log(`🌐 前端页面: http://localhost:${PORT}\n`);
+  } else {
+    console.log(`\n`);
+  }
 });
 
 // 清除缓存 API（测试用）

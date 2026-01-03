@@ -6,44 +6,66 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 IGotIt is a full-stack English learning platform that uses YouTube videos with interactive subtitles for language learning. Users can click on any word in subtitles to get AI-powered translations while watching videos.
 
+**Project Structure**: Monorepo using pnpm workspaces
+
 ## Development Commands
 
-### Frontend (from root)
+### From Root (using pnpm)
 ```bash
-npm run dev        # Start Vite dev server (port 5173)
-npm run build      # Build for production
-npm run preview    # Preview production build locally
+# Install all dependencies
+pnpm install
+
+# Start frontend dev server
+pnpm dev
+
+# Build frontend
+pnpm build
+
+# Start backend server
+pnpm start:backend
+pnpm dev:backend
 ```
 
-### Backend (from server directory)
+### Individual Package Commands
+
+**Frontend** (`packages/frontend/`):
 ```bash
-cd server
-npm run dev        # Start Express server with nodemon
-npm start          # Start production server (port 3001)
+cd packages/frontend
+pnpm dev        # Start Vite dev server (port 5173)
+pnpm build      # Build for production
+pnpm preview    # Preview production build locally
+```
+
+**Backend** (`packages/backend/`):
+```bash
+cd packages/backend
+pnpm dev        # Start Express server
+pnpm start      # Start production server (port 3000)
 ```
 
 ### Python Subtitle Extraction
 ```bash
-python3 get_subtitles.py 'VIDEO_URL'    # Extract subtitles from YouTube
+python3 packages/backend/get_subtitles.py 'VIDEO_URL'
 ```
 The script outputs JSON to stdout with VTT-parsed subtitle data including text, start, and duration for each word.
 
 ## Architecture
 
-### Two-Tier Structure
-- **Frontend**: React 18 SPA (Vite-based) handling video playback UI
-- **Backend**: Express API server serving as proxy for subtitle extraction and translation services
+### Monorepo Structure
+- **Root**: Contains pnpm workspace configuration
+- **packages/frontend/**: React 18 SPA (Vite-based) handling video playback UI
+- **packages/backend/**: Express API server for subtitle extraction and translation
 
 ### Key Components
 
-**Frontend Core**:
+**Frontend Core** (`packages/frontend/`):
 - `src/App.jsx` - Main container managing video state, subtitle data, and translations
 - `src/components/VideoPlayer.jsx` - YouTube IFrame API wrapper
 - `src/components/SubtitlePanel.jsx` - Renders clickable subtitle words synced with video
 - `src/components/SubtitleWord.jsx` - Individual word component with translation display
 - `src/hooks/useVideoPlayer.js` - Custom hook encapsulating YouTube API interactions
 
-**Backend Core** (`server/server.js`):
+**Backend Core** (`packages/backend/server.js`):
 - `POST /api/subtitles` - Spawns Python process to extract YouTube subtitles via yt-dlp
 - `POST /api/translate` - Word translation with stop-word filtering
 - `POST /api/translate-sentence` - Full sentence translation with LLM caching
@@ -61,12 +83,12 @@ The script outputs JSON to stdout with VTT-parsed subtitle data including text, 
 
 ### Caching Strategy
 
-**Backend** (`server/server.js`):
+**Backend** (`packages/backend/server.js`):
 - `subtitleCache` - Map caching raw subtitle extraction results by video ID
 - `translationCache` - Map caching sentence translations with cache key combining sentence + hash
 - Stop words filtered inline without caching (a/the/is/are/etc.)
 
-**Frontend** (`src/App.jsx`):
+**Frontend** (`packages/frontend/src/App.jsx`):
 - `visibleTranslations` state tracks which translations are currently displayed
 
 ## Important Implementation Details
@@ -82,7 +104,7 @@ The script outputs JSON to stdout with VTT-parsed subtitle data including text, 
 - Words are reassembled into sentences at punctuation boundaries (。！？)
 
 ### Translation Service
-- Primary: Zhipu AI (GLM-4-Flash-250414) - requires API key in `server/.env`
+- Primary: Zhipu AI (GLM-4-Flash-250414) - requires API key in `packages/backend/.env`
 - Fallback: Google Translation API (currently commented out in code)
 - Stop words list hardcoded in backend to filter common English words
 - Batch translation with concurrency control (max 5 concurrent requests)
@@ -98,11 +120,11 @@ The script outputs JSON to stdout with VTT-parsed subtitle data including text, 
 
 **Backend** requires:
 ```bash
-cd server
-npm install
+cd packages/backend
+pnpm install
 ```
 
-Create `.env` file (see `server/.env.example`):
+Create `.env` file (see `packages/backend/.env.example`):
 ```
 ZHIPU_API_KEY=your_key_here
 ```
@@ -113,6 +135,23 @@ python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install yt-dlp
 ```
+
+## Deployment
+
+### Zeabur Multi-Service Deployment
+
+The project is configured for Zeabur deployment as separate frontend and backend services:
+
+1. **Frontend** (`packages/frontend/`): Static site deployment using Caddy
+   - Build output: `dist/`
+   - Configured via `zbpack.json`
+
+2. **Backend** (`packages/backend/`): Docker container deployment
+   - Uses `Dockerfile` to build container with Node.js + Python
+   - Exposes port 3000
+   - Configured via `zbpack.json`
+
+Zeabur will automatically detect the pnpm workspace and deploy both packages as separate services.
 
 ## Known Constraints
 
