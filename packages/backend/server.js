@@ -50,7 +50,16 @@ if (process.env.ZHIPU_AI_API_KEY) {
 }
 
 // 中间件
-app.use(cors());
+// 中间件
+// 配置 CORS：允许所有来源，支持跨域 Cookie
+app.use(cors({
+  origin: true, // 自动反射请求来源 (即允许所有)
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true // 允许携带 Cookie
+}));
+// 显式处理所有 OPTIONS 预检请求
+app.options('*', cors());
 app.use(express.json());
 
 // 从 YouTube URL 中提取视频 ID
