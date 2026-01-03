@@ -32,8 +32,7 @@ cookies.txt
 server/data/
 *.db
 
-# Monorepo 残留
-packages/
+# pnpm workspace 文件
 pnpm-lock.yaml
 pnpm-workspace.yaml
 

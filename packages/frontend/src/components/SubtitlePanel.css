@@ -184,52 +184,109 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-4);
   padding: var(--space-4);
   background: var(--color-bg-card);
   border-bottom: 1px solid var(--color-border);
 }
 
 .control-button {
-  padding: var(--space-3) var(--space-5);
-  background: var(--color-orange);
-  color: white;
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  min-width: 70px;
-  box-shadow: var(--shadow-sm);
+  position: relative;
+  /* 为 feedback-text 定位 */
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
-  font-family: var(--font-body);
+  border: none;
+  border-radius: 50%;
+  /* 圆形按钮 */
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text-primary);
+  background: var(--color-bg-body);
+  overflow: visible;
+  /* 确保提示不被剪裁 */
 }
 
-.control-button svg {
-  flex-shrink: 0;
+/* 浮动反馈动画 */
+@keyframes floatUpFadeOut {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -10px) scale(0.8);
+  }
+
+  50% {
+    transform: translate(-50%, -25px) scale(1.1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -35px) scale(1);
+    display: none;
+  }
 }
 
-.control-button span {
-  font-variant-numeric: tabular-nums;
+.feedback-text {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--color-orange);
+  pointer-events: none;
+  white-space: nowrap;
+  animation: floatUpFadeOut 0.8s ease-out forwards;
+  z-index: 100;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
 }
 
-.control-button:hover {
-  background: var(--color-orange-dark);
-  transform: translateY(-1px);
+/* 圆形辅助按钮 (前进/后退) */
+.round-btn {
+  width: 40px;
+  height: 40px;
+  color: var(--color-text-muted);
+}
+
+.round-btn:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+  transform: scale(1.05);
   box-shadow: var(--shadow-md);
 }
 
-.control-button.play-pause {
-  min-width: 90px;
-  font-size: var(--text-sm);
+.round-btn:active {
+  transform: scale(0.95);
 }
 
-.control-button.play-pause svg:last-child {
-  display: none;
+/* 播放/暂停大按钮 */
+.play-pause-btn {
+  width: 56px;
+  height: 56px;
+  background: var(--color-orange);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.play-pause-btn:hover {
+  background: var(--color-orange-dark);
+  transform: scale(1.05);
+  box-shadow: var(--shadow-lg);
+}
+
+.play-pause-btn:active {
+  transform: scale(0.95);
+}
+
+.play-pause-btn.playing {
+  background: var(--color-bg-body);
+  color: var(--color-orange);
+  border: 2px solid var(--color-orange);
+}
+
+.play-pause-btn.playing:hover {
+  background: var(--color-orange);
+  color: white;
 }
 
 .subtitle-count-badge {

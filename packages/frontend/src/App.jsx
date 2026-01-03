@@ -28,6 +28,7 @@ function App() {
     const [showVideo, setShowVideo] = useState(true);
     const [pauseOnTranslate, setPauseOnTranslate] = useState(false); // 翻译时是否暂停
     const [autoScroll, setAutoScroll] = useState(true); // 播放时是否自动滚动
+    const [isPlaying, setIsPlaying] = useState(false); // 播放状态
 
     // 处理 URL 提交
     const handleUrlSubmit = async (url) => {
@@ -411,6 +412,7 @@ function App() {
                                     ref={videoPlayerRef}
                                     videoId={videoId}
                                     onTimeUpdate={handleTimeUpdate}
+                                    onStateChange={(state) => setIsPlaying(state === 1)}
                                 />
                             </div>
 
@@ -462,6 +464,7 @@ function App() {
                                     sentenceTranslations={sentenceTranslations}
                                     videoPlayerRef={videoPlayerRef}
                                     autoScroll={autoScroll}
+                                    isPlaying={isPlaying}
                                 />
                             </div>
                         </div>

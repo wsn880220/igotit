@@ -17,7 +17,7 @@ def get_cookies_file():
     2. 环境变量 YOUTUBE_COOKIES_BASE64
     """
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    local_cookies = os.path.join(script_dir, 'cookies.txt')
+    local_cookies = os.path.join(os.path.dirname(os.path.dirname(script_dir)), 'cookies.txt')
     
     # 优先使用本地文件
     if os.path.exists(local_cookies):
@@ -48,7 +48,7 @@ def get_subtitles(video_id):
 
     # 获取脚本所在目录
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    venv_ytdlp = os.path.join(script_dir, 'venv', 'bin', 'yt-dlp')
+    venv_ytdlp = os.path.join(os.path.dirname(os.path.dirname(script_dir)), 'venv', 'bin', 'yt-dlp')
 
     # 获取 cookies 文件（支持本地文件或环境变量）
     cookies_file = get_cookies_file()

@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import './VideoPlayer.css';
 
-const VideoPlayer = forwardRef(({ videoId, onTimeUpdate }, ref) => {
+const VideoPlayer = forwardRef(({ videoId, onTimeUpdate, onStateChange }, ref) => {
     const playerRef = useRef(null);
     const intervalRef = useRef(null);
 
@@ -79,6 +79,11 @@ const VideoPlayer = forwardRef(({ videoId, onTimeUpdate }, ref) => {
     };
 
     const onPlayerStateChange = (event) => {
+        // 通知父组件状态变化
+        if (onStateChange) {
+            onStateChange(event.data);
+        }
+
         // 当视频播放时，开始更新时间
         if (event.data === window.YT.PlayerState.PLAYING) {
             startTimeUpdate();

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, memo, useCallback } from 'react';
+import React, { useRef, useEffect, memo, useCallback, useState } from 'react';
 import SubtitleWord from './SubtitleWord';
 import './SubtitlePanel.css';
 
@@ -124,13 +124,15 @@ function SubtitlePanel({
     translations, // Object
     sentenceTranslations, // Object
     videoPlayerRef,
-    autoScroll = true // 默认为 true
+    autoScroll = true, // 默认为 true
+    isPlaying = false  // 添加播放状态
 }) {
     const panelRef = useRef(null);
     const listRef = useRef(null);
     const activeSubRef = useRef(null);
+    const [feedback, setFeedback] = useState({ type: null, id: 0 });
 
-    // 播放控制函数 (保持不变)
+    // 播放控制函数
     const handlePlayPause = useCallback(() => {
         if (videoPlayerRef && videoPlayerRef.current) {
             const state = videoPlayerRef.current.getPlayerState();
@@ -140,6 +142,7 @@ function SubtitlePanel({
     }, [videoPlayerRef]);
 
     const handleRewind = useCallback(() => {
+        setFeedback({ type: 'rewind', id: Date.now() });
         if (videoPlayerRef && videoPlayerRef.current) {
             const current = videoPlayerRef.current.getCurrentTime();
             videoPlayerRef.current.seekTo(Math.max(0, current - 5));
@@ -151,6 +154,7 @@ function SubtitlePanel({
     }, [videoPlayerRef]);
 
     const handleForward = useCallback(() => {
+        setFeedback({ type: 'forward', id: Date.now() });
         if (videoPlayerRef && videoPlayerRef.current) {
             const current = videoPlayerRef.current.getCurrentTime();
             videoPlayerRef.current.seekTo(current + 10);
@@ -187,26 +191,31 @@ function SubtitlePanel({
     return (
         <div className="subtitle-panel glass-effect" ref={panelRef}>
             <div className="playback-controls">
-                <button onClick={handleRewind} className="control-button" title="后退 5 秒">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M3 12h18M3 6h18M3 18h18M7 12l-4 4v-8l4 4z"/>
+                <button onClick={handleRewind} className="control-button round-btn" title="后退 5 秒">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" />
                     </svg>
-                    <span>-5s</span>
+                    {feedback.type === 'rewind' && <span key={feedback.id} className="feedback-text">-5s</span>}
                 </button>
-                <button onClick={handlePlayPause} className="control-button play-pause" title="播放/暂停">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M8 5v14l11-7z"/>
-                    </svg>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                        <rect x="6" y="4" width="4" height="16"/>
-                        <rect x="14" y="4" width="4" height="16"/>
-                    </svg>
+
+                <button onClick={handlePlayPause} className={`control-button play-pause-btn ${isPlaying ? 'playing' : ''}`} title={isPlaying ? "暂停" : "播放"}>
+                    {isPlaying ? (
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="6" y="4" width="4" height="16" rx="1" />
+                            <rect x="14" y="4" width="4" height="16" rx="1" />
+                        </svg>
+                    ) : (
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8 5.14v14.72a.5.5 0 0 0 .757.429l11-7.36a.5.5 0 0 0 0-.858l-11-7.36A.5.5 0 0 0 8 5.14z" />
+                        </svg>
+                    )}
                 </button>
-                <button onClick={handleForward} className="control-button" title="前进 10 秒">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 12H3M21 6H3M21 18H3M17 12l4 4v-8l-4 4z"/>
+
+                <button onClick={handleForward} className="control-button round-btn" title="前进 10 秒">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M13 17l5-5-5-5M6 17l5-5-5-5" />
                     </svg>
-                    <span>+10s</span>
+                    {feedback.type === 'forward' && <span key={feedback.id} className="feedback-text">+10s</span>}
                 </button>
             </div>
 

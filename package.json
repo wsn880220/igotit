@@ -8,8 +8,5 @@
     "build": "pnpm --filter 'igotit-frontend' build",
     "start:backend": "pnpm --filter 'igotit-backend' start",
     "dev:backend": "pnpm --filter 'igotit-backend' dev"
-  },
-  "devDependencies": {
-    "typescript": "^5.0.0"
   }
 }
