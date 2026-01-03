@@ -61,9 +61,9 @@ COPY --from=frontend-builder /build/packages/frontend/dist ./dist
 # 设置 Python 脚本为可执行
 RUN chmod +x get_subtitles.py 2>/dev/null || true
 
-# 创建非 root 用户
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
-USER appuser
+# 使用内置的非 root 用户 'node' (UID 1000)
+RUN chown -R node:node /app
+USER node
 
 # 暴露端口
 EXPOSE 3000
