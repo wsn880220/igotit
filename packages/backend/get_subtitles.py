@@ -113,7 +113,7 @@ def get_subtitles(video_id):
             venv_ytdlp,
             "--write-subs",          # 下载手动上传的字幕
             "--write-auto-subs",     # 下载自动生成的字幕
-            "--sub-langs", "en",     # 简化语言配置，只用 en
+            "--sub-langs", "en-GB,en-US,en",  # 支持多种英语变体
             "--skip-download",       # 跳过视频下载
             "--sub-format", "vtt",   # 字幕格式
             "--no-check-certificate",  # 跳过证书检查
