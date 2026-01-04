@@ -56,7 +56,7 @@ const SubtitleItem = memo(({
                 </div>
                 <button
                     className="translate-sentence-btn"
-                    onClick={() => onSentenceTranslate(subtitle.text, index)}
+                    onClick={(e) => { e.stopPropagation(); onSentenceTranslate(subtitle.text, index); }}
                     title={sentenceTranslation ? "隐藏翻译" : "翻译整句"}
                 >
                     {sentenceTranslation?.visible ? '🔼' : '🌐'}
@@ -172,21 +172,22 @@ function SubtitlePanel({
     });
 
     // 自动滚动 (Optimized)
+    // 自动滚动 (Optimized for both container and window scrolling)
     useEffect(() => {
         if (autoScroll && activeSubRef.current && listRef.current) {
-            const list = listRef.current;
-            const activeSub = activeSubRef.current;
-            const listRect = list.getBoundingClientRect();
-            const subRect = activeSub.getBoundingClientRect();
-            const relativeTop = subRect.top - listRect.top + list.scrollTop;
-            const targetScrollTop = relativeTop - (listRect.height * 0.2);
+            const container = listRef.current;
+            const element = activeSubRef.current;
 
-            list.scrollTo({
-                top: targetScrollTop,
+            // Calculate center position
+            // element.offsetTop is relative to the container (because container is positioned relative)
+            const newScrollTop = element.offsetTop - (container.clientHeight / 2) + (element.offsetHeight / 2);
+
+            container.scrollTo({
+                top: newScrollTop,
                 behavior: 'smooth'
             });
         }
-    }, [currentIndex, autoScroll]); // 依赖 currentIndex 和 autoScroll
+    }, [currentIndex, autoScroll]);
 
     return (
         <div className="subtitle-panel glass-effect" ref={panelRef}>

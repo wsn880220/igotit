@@ -79,6 +79,15 @@
 
 @media (max-width: 480px) {
   .video-wrapper {
-    border-radius: var(--radius-sm);
+    border-radius: 0;
+    /* Full bleed on small mobile */
+    padding-bottom: 56.25%;
+    /* Maintain ratio default */
+  }
+
+  /* When inside the special mobile layout, we might override padding if parent handles ratio */
+  .app .video-section .video-wrapper {
+    padding-bottom: 0;
+    height: 100%;
   }
 }

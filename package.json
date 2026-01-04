@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "description": "IGotIt - YouTube 字幕学习平台 Monorepo",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "pnpm --filter 'igotit-frontend' dev",
-    "build": "pnpm --filter 'igotit-frontend' build",
-    "start:backend": "pnpm --filter 'igotit-backend' start",
-    "dev:backend": "pnpm --filter 'igotit-backend' dev"
+    "dev": "npm run dev -w igotit-frontend",
+    "build": "npm run build -w igotit-frontend",
+    "start:backend": "npm start -w igotit-backend",
+    "dev:backend": "npm run dev -w igotit-backend"
   }
 }

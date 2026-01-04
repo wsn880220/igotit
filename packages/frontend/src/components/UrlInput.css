@@ -139,14 +139,22 @@
 
 @media (max-width: 768px) {
   .input-wrapper {
-    flex-direction: column;
-    gap: var(--space-3);
-    padding: var(--space-3);
+    flex-direction: row;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    align-items: center;
   }
 
   .url-input {
-    padding: var(--space-4) var(--space-4);
-    text-align: center;
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+    min-width: 0;
+    /* Ensures input shrinks properly */
+  }
+
+  .submit-button {
+    padding: var(--space-3) var(--space-5);
+    font-size: var(--text-sm);
   }
 
   .error-message {

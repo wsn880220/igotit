@@ -146,7 +146,7 @@
 
 /* 视频隐藏时，字幕区域扩展并居中 */
 .content-container.video-hidden {
-  grid-template-columns: 0fr 1fr;
+  grid-template-columns: 1fr;
   gap: 0;
   padding: 0;
 }
@@ -173,8 +173,8 @@
 }
 
 .video-section.hidden {
-  visibility: hidden;
-  pointer-events: none;
+  display: none;
+  /* Collapse space */
 }
 
 /* ============================================
@@ -209,10 +209,19 @@
   margin: 0;
 }
 
+/* Hide Title - Strict */
+.subtitle-header h3 {
+  display: none !important;
+}
+
 .subtitle-controls {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  width: 100%;
+  /* Fill header */
+  justify-content: space-between;
+  /* Disperse items */
 }
 
 /* ============================================
@@ -360,45 +369,209 @@
 @media (max-width: 768px) {
   .app {
     padding: var(--space-4);
+    /* Mobile App Layout */
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    /* Remove padding to handle full bleed */
   }
 
   .header-search-wrapper {
     padding: var(--space-12) var(--space-4) var(--space-8);
   }
 
-  .header-search-wrapper.compact {
-    padding: var(--space-4);
-    gap: var(--space-4);
-  }
-
-  .app-title {
-    font-size: var(--text-5xl);
-  }
+  /* Mobile: Header & Input Single Line */
+  /* Mobile: Header & Input Single Line */
+  /* Replaced by consolidated block below to avoid override */
 
   .header-search-wrapper.compact .app-title {
-    font-size: var(--text-2xl);
+    font-size: var(--text-xl);
+    /* Smaller logo text */
+  }
+
+  .header-search-wrapper.compact .app-title-logo {
+    height: 1.0em;
+  }
+
+  .header-search-wrapper.compact .url-input {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+  }
+
+  .header-search-wrapper.compact .submit-button {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  /* Make header scroll away on mobile so video can stick to top */
+  /* Make header scroll away on mobile so video can stick to top */
+  /* MERGED COMPACT HEADER STYLES */
+  .header-search-wrapper.compact {
+    padding: 6px var(--space-3);
+    /* Very compact padding */
+    gap: var(--space-2);
+    margin-bottom: 0;
+    /* REMOVE GAP below header */
+    min-height: auto;
+
+    position: relative;
+    top: auto;
+    border-bottom: none;
+    z-index: 1;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  .header-search-wrapper.compact .app-header {
+    margin-right: var(--space-2);
+    margin-bottom: 0;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .header-search-wrapper.compact .url-input-container {
+    flex: 1;
+    min-width: 0;
   }
 
   .content-container {
     padding: 0;
-    gap: var(--space-6);
+    gap: 0;
+    /* Remove gap, handle spacing inside sections */
+    overflow: hidden;
+    /* Prevent body scroll within */
+    display: flex;
+    /* Flex column for content */
+    flex-direction: column;
+    flex: 1;
+    /* Grow to fill app */
+    width: 100%;
   }
 
+  /* Video Section - Centered and Stable */
   .video-section {
-    max-height: 400px;
+    position: relative;
+    z-index: 1;
+    background: #000;
+    width: 100%;
+
+    /* Remove negative margins as we are now full width container */
+    margin: 0;
+
+    aspect-ratio: 16/9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    /* Never shrink */
+  }
+
+  /* Ensure VideoPlayer fills the centered section */
+  .video-section .video-player-container,
+  .video-section .video-wrapper {
+    width: 100%;
+    height: 100%;
+    /* Fill container */
+    padding-bottom: 0;
+    /* Use flex height */
+    border-radius: 0;
+  }
+
+  .subtitle-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* Container for list */
+    background: var(--color-bg-body);
+    width: 100%;
   }
 
   .subtitle-header {
     flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-4);
-    padding: var(--space-4) var(--space-5);
+    padding: 0;
+    gap: 0;
+    align-items: stretch;
+    height: auto;
+    min-height: 0;
+    overflow: hidden;
+    margin-bottom: 0;
+    /* Remove gap */
+    background: transparent;
+    /* Remove card bg to merge visual */
+    box-shadow: none;
+    border-radius: 0;
   }
 
   .subtitle-controls {
-    width: 100%;
-    justify-content: space-between;
+    display: flex;
+    flex-direction: row;
     flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+    /* Consistent gap */
+    padding: 8px 12px;
+    background: var(--color-bg-card);
+    /* Bg for controls area */
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  /* Toggle (Top Row) */
+  .subtitle-controls .pause-toggle {
+    width: calc(50% - 4px);
+    /* Exact half minus gap */
+    margin: 0;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    font-size: 11px;
+    background: var(--color-bg-body);
+    /* Clean white/dark bg */
+    border-radius: 99px;
+    /* Pill shape */
+    height: 32px;
+    color: var(--color-text-secondary);
+    transition: all 0.2s ease;
+  }
+
+  /* Active state logic handles by JS or generic checked style? 
+     App.jsx structure: label > input + span.
+  */
+  .subtitle-controls .pause-toggle:has(input:checked) {
+    background: var(--color-orange);
+    color: white;
+    border-color: var(--color-orange);
+    font-weight: 600;
+  }
+
+  /* Hide default checkbox completely */
+  .subtitle-controls .pause-toggle input {
+    display: none;
+  }
+
+  /* Button (Bottom Row) */
+  .subtitle-controls button {
+    width: calc(50% - 4px);
+    padding: 0;
+    align-items: center;
+    display: flex;
+    font-size: 11px;
+    height: 32px;
+    justify-content: center;
+    margin-top: 0;
+    background: var(--color-bg-body);
+    border: 1px solid var(--color-border);
+    border-radius: 99px;
+    /* Pill shape */
+    color: var(--color-text-secondary);
+  }
+
+
+  .subtitle-controls::-webkit-scrollbar {
+    display: none;
   }
 
   .empty-state {
@@ -419,13 +592,17 @@
   }
 
   .pause-toggle span {
-    display: none;
+    display: inline;
+    /* Restore text */
+    font-size: var(--text-xs);
+    /* Make it slightly smaller to fit */
   }
 
   /* 视频隐藏时的移动端样式 */
   .content-container.video-hidden .subtitle-section {
     max-width: 100%;
-    padding: 0 var(--space-4);
+    padding: 0;
+    /* Don't shrink container */
   }
 
   .content-container.video-hidden .subtitle-header {
@@ -436,6 +613,8 @@
   .content-container.video-hidden .subtitle-controls {
     width: 100%;
     margin-left: 0;
+    max-width: none;
+    /* Ensure no constraint */
   }
 }
 
@@ -452,14 +631,9 @@
     height: 1.2em;
   }
 
-  .subtitle-controls {
-    flex-direction: column;
-    align-items: stretch;
+  .app-title-logo {
+    height: 1.2em;
   }
 
-  .clear-cache-btn,
-  .toggle-video-button {
-    width: 100%;
-    justify-content: center;
-  }
+  /* Remove conflicting column override for controls */
 }
