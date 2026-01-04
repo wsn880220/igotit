@@ -26,6 +26,7 @@ RUN pip3 install --break-system-packages --no-cache-dir yt-dlp
 
 # 5. 复制源代码
 COPY server.js ./
+COPY admin_routes.js ./
 COPY channels.json ./
 COPY get_subtitles.py ./
 # 如果有 .env.example 则复制，没有也不报错
