@@ -582,6 +582,7 @@ app.get('/health', (req, res) => {
 });
 
 // 版本信息（用于验证部署）
+const serverStartTime = new Date().toISOString();
 app.get('/version', (req, res) => {
   res.json({
     version: '1.0.0',
@@ -591,7 +592,7 @@ app.get('/version', (req, res) => {
       'Base64 环境变量支持'
     ],
     lastUpdate: '2026-01-04',
-    commit: '6173e84'  // 最新提交
+    serverStarted: serverStartTime  // 服务器启动时间（用于验证部署）
   });
 });
 
