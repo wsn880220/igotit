@@ -66,6 +66,16 @@ def get_subtitles(video_id):
     # 获取 cookies 文件（支持本地文件或环境变量）
     cookies_file = get_cookies_file()
     cookies_args = ['--cookies', cookies_file] if cookies_file else []
+    
+    # 调试：输出 cookies 信息
+    if cookies_file:
+        print(f"🍪 Cookies 文件路径: {cookies_file}", file=sys.stderr)
+        print(f"🍪 文件存在: {os.path.exists(cookies_file)}", file=sys.stderr)
+        if os.path.exists(cookies_file):
+            print(f"🍪 文件大小: {os.path.getsize(cookies_file)} bytes", file=sys.stderr)
+            print(f"🍪 文件权限: {oct(os.stat(cookies_file).st_mode)[-3:]}", file=sys.stderr)
+    else:
+        print(f"⚠️  未找到 cookies 文件！", file=sys.stderr)
 
     # 创建临时目录
     temp_dir = tempfile.mkdtemp()
