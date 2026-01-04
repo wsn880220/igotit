@@ -10,6 +10,7 @@ import path from 'path';
 // 注释：暂时停用本地词典
 // import { initDictionary, queryWord, formatDictionaryResult } from './dictionary.js';
 import ZhipuAI from 'zhipuai-sdk-nodejs-v4';
+import adminRoutes from './admin_routes.js';
 
 // 加载环境变量
 dotenv.config();
@@ -571,6 +572,9 @@ app.post('/api/translate-sentence', async (req, res) => {
   }
 });
 
+
+// 管理员路由（Cookies 管理）
+app.use('/api/admin', adminRoutes);
 
 // 健康检查
 app.get('/health', (req, res) => {

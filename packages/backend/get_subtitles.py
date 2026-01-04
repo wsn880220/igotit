@@ -13,25 +13,31 @@ def get_cookies_file():
     """
     获取 cookies 文件路径
     优先级：
-    1. 本地文件 cookies.txt
-    2. 环境变量 YOUTUBE_COOKIES_BASE64
+    1. API 上传的临时文件 (/tmp/youtube_cookies.txt)
+    2. 本地文件 cookies.txt (开发环境)
+    3. 环境变量 YOUTUBE_COOKIES_BASE64
     """
+    # 优先级 1: API 上传的文件
+    api_cookies = '/tmp/youtube_cookies.txt'
+    if os.path.exists(api_cookies):
+        print(f"✅ 使用 API 上传的 cookies", file=sys.stderr)
+        return api_cookies
+    
+    # 优先级 2: 本地文件（开发环境）
     script_dir = os.path.dirname(os.path.abspath(__file__))
     local_cookies = os.path.join(os.path.dirname(os.path.dirname(script_dir)), 'cookies.txt')
-    
-    # 优先使用本地文件
     if os.path.exists(local_cookies):
         print(f"✅ 使用本地 cookies.txt", file=sys.stderr)
         return local_cookies
     
-    # 尝试从环境变量获取
+    # 优先级 3: 环境变量
     cookies_b64 = os.getenv('YOUTUBE_COOKIES_BASE64')
     if cookies_b64:
         try:
             # 解码 base64
             cookies_content = base64.b64decode(cookies_b64).decode('utf-8')
-            # 写入临时文件
-            temp_cookies = '/tmp/youtube_cookies.txt'
+            # 写入临时文件（使用不同的文件名避免冲突）
+            temp_cookies = '/tmp/youtube_cookies_env.txt'
             with open(temp_cookies, 'w') as f:
                 f.write(cookies_content)
             print(f"✅ 使用环境变量 YOUTUBE_COOKIES_BASE64", file=sys.stderr)
