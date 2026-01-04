@@ -107,6 +107,10 @@ def get_subtitles(video_id):
             "--skip-download",       # 跳过视频下载
             "--sub-format", "vtt",   # 字幕格式
             "--no-check-certificate",  # 跳过证书检查
+            # 反机器人检测配置
+            "--user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "--sleep-requests", "1",  # 每个请求间隔1秒
+            "--extractor-args", "youtube:player_client=web,android",  # 使用多个客户端
             "-o", output_template,
             *cookies_args,
             url
