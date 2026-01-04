@@ -581,6 +581,20 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: '服务器运行正常 (使用 yt-dlp)' });
 });
 
+// 版本信息（用于验证部署）
+app.get('/version', (req, res) => {
+  res.json({
+    version: '1.0.0',
+    features: [
+      'Cookies 管理 API',
+      '反机器人检测配置',
+      'Base64 环境变量支持'
+    ],
+    lastUpdate: '2026-01-04',
+    commit: '6173e84'  // 最新提交
+  });
+});
+
 // 获取最近视频列表
 app.get('/api/recent-videos', (req, res) => {
   res.json({
