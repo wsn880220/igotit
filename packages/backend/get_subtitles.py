@@ -123,11 +123,20 @@ def get_subtitles(video_id):
             timeout=30
         )
         
+        # 调试：打印 yt-dlp 输出
+        if result.stdout:
+            print(f"yt-dlp stdout: {result.stdout[:500]}", file=sys.stderr)
+        if result.stderr:
+            print(f"yt-dlp stderr: {result.stderr[:500]}", file=sys.stderr)
+        
         # 查找生成的 VTT 文件（优先查找手动字幕，然后是自动字幕）
         vtt_file = None
         
         # 根据 output_template 构建可能的文件名
         base_name = os.path.basename(output_template)
+        
+        # 调试：列出临时目录中的所有文件
+        print(f"临时目录文件列表: {os.listdir(temp_dir)}", file=sys.stderr)
         
         # 优先级1: en-GB (英国英语)
         for variant in [f"{base_name}.en-GB.vtt", f"{base_name}.en.en-GB.vtt"]:
@@ -164,6 +173,7 @@ def get_subtitles(video_id):
                     break
 
         if not vtt_file:
+            print(f"❌ 未找到字幕文件，临时目录: {temp_dir}", file=sys.stderr)
             print(json.dumps({"error": "没有找到英文字幕"}))
             return
 
