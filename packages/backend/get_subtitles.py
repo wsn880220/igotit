@@ -31,10 +31,14 @@ def get_subtitles(video_id):
         # 3. 获取字幕 (使用 youtube-transcript-api)
         print(f"📥 正在获取字幕: {video_id}", file=sys.stderr)
         
-        # 实例化 API 并配置代理
-        api = YouTubeTranscriptApi()
         if proxies:
-            api.proxies = proxies
+            import requests
+            session = requests.Session()
+            session.proxies = proxies
+            api = YouTubeTranscriptApi(http_client=session)
+            print(f"🌐 使用代理实例化 API", file=sys.stderr)
+        else:
+            api = YouTubeTranscriptApi()
 
         # 获取字幕列表
         try:
