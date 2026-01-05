@@ -120,10 +120,19 @@ def get_subtitles(video_id):
             # 反机器人检测配置
             "--user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             "--sleep-requests", "1",  # 每个请求间隔1秒
+        ]
+
+        # 检查是否配置了代理
+        proxy_url = os.getenv('PROXY_URL')
+        if proxy_url:
+            print(f"🌐 使用代理服务: {proxy_url}", file=sys.stderr)
+            cmd.extend(["--proxy", proxy_url])
+
+        cmd.extend([
             "-o", output_template,
             *cookies_args,
             url
-        ]
+        ])
 
         result = subprocess.run(
             cmd,

@@ -124,7 +124,7 @@ async function getVideoTitle(videoId) {
     const pythonCmd = fs.existsSync(path.join(REPO_ROOT, 'venv', 'bin', 'python3'))
       ? path.join(REPO_ROOT, 'venv', 'bin', 'python3')
       : 'python3';
-    const command = `${pythonCmd} -c "import yt_dlp; ydl_opts={'quiet':True,'no_warnings':True}; with yt_dlp.YoutubeDL(ydl_opts) as ydl: info = ydl.extract_info(f'https://www.youtube.com/watch?v=${videoId}', download=False); print(info.get('title', 'Unknown'))"`;
+    const command = `${pythonCmd} -c "import yt_dlp, os; proxy = os.environ.get('PROXY_URL'); ydl_opts={'quiet':True,'no_warnings':True}; ydl_opts['proxy'] = proxy if proxy else None; with yt_dlp.YoutubeDL(ydl_opts) as ydl: info = ydl.extract_info(f'https://www.youtube.com/watch?v=${videoId}', download=False); print(info.get('title', 'Unknown'))"`;
 
     const { stdout } = await execPromise(command, {
       cwd: REPO_ROOT,
@@ -647,7 +647,11 @@ app.get('/api/recommended-videos', async (req, res) => {
           const localYtDlp = path.join(REPO_ROOT, 'venv', 'bin', 'yt-dlp');
           const ytdlpCmd = fs.existsSync(localYtDlp) ? localYtDlp : 'yt-dlp';
 
-          const command = `${ytdlpCmd} --flat-playlist --print "%(id)s|||%(title)s" "${channel.url}" --playlist-end ${MAX_VIDEOS_PER_CHANNEL}`;
+          let command = `${ytdlpCmd} --flat-playlist --print "%(id)s|||%(title)s" "${channel.url}" --playlist-end ${MAX_VIDEOS_PER_CHANNEL}`;
+
+          if (process.env.PROXY_URL) {
+            command += ` --proxy "${process.env.PROXY_URL}"`;
+          }
 
           const { stdout } = await execPromise(command, {
             // 如果是开发环境且 venv 存在，在项目根目录执行；否则在当前目录

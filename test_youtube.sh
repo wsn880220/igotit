@@ -23,7 +23,13 @@ echo ""
 
 # 测试 2: 无 cookies
 echo "✓ 检查 2: 无 cookies 尝试"
-./venv/bin/yt-dlp \
+PROXY_ARGS=""
+if [ -n "$PROXY_URL" ]; then
+    echo "  🌐 使用代理: $PROXY_URL"
+    PROXY_ARGS="--proxy $PROXY_URL"
+fi
+
+./venv/bin/yt-dlp $PROXY_ARGS \
     --user-agent "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" \
     --extractor-args "youtube:player_client=web" \
     --list-subs "$TEST_VIDEO" 2>&1 | head -n 10
@@ -39,7 +45,7 @@ echo ""
 echo "✓ 检查 3: 使用 cookies"
 if [ -f cookies.txt ]; then
     echo "  ✅ cookies.txt 已找到"
-    ./venv/bin/yt-dlp \
+    ./venv/bin/yt-dlp $PROXY_ARGS \
         --cookies cookies.txt \
         --list-subs "$TEST_VIDEO" 2>&1 | head -n 10
     
