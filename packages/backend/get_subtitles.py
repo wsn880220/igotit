@@ -119,7 +119,7 @@ def get_subtitles(video_id):
             "--no-check-certificate",  # 跳过证书检查
             # 反机器人检测配置
             # 反机器人检测配置
-            "--extractor-args", "youtube:player_client=android",
+            "--user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             "--sleep-requests", "1",  # 每个请求间隔1秒
         ]
 
@@ -128,12 +128,6 @@ def get_subtitles(video_id):
         if proxy_url:
             print(f"🌐 使用代理服务: {proxy_url}", file=sys.stderr)
             cmd.extend(["--proxy", proxy_url])
-            
-            # 关键修改：使用代理时强制禁用 Cookies
-            # 原因：Cookies 如果包含国内位置信息，而代理是国外 IP，会导致 YouTube 触发安全封锁
-            if cookies_args:
-                print(f"⚠️  检测到代理模式，已自动禁用 Cookies 以防止位置冲突", file=sys.stderr)
-                cookies_args = []
 
         cmd.extend([
             "-o", output_template,
