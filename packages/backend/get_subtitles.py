@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """
-"""
 使用 youtube-transcript-api 获取 YouTube 字幕，返回 JSON 格式
 """
 import sys

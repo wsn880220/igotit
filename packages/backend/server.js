@@ -387,10 +387,10 @@ app.post('/api/subtitles', async (req, res) => {
       });
     }
 
-    // 使用 yt-dlp 获取字幕
-    const result = await getSubtitlesWithYtDlp(videoId);
-    const subtitles = result.subtitles;
-    const videoTitle = result.title;
+    // 使用 youtube-transcript-api 获取字幕
+    const subtitleData = await getSubtitles(videoId);
+    const subtitles = subtitleData.subtitles;
+    const videoTitle = subtitleData.title;
 
     if (!subtitles || subtitles.length === 0) {
       return res.status(404).json({
