@@ -21,8 +21,8 @@ COPY package*.json ./
 # 使用 npm ci 保证确定性，只安装生产依赖
 RUN npm ci --only=production
 
-# 4. 安装 Python 依赖 (yt-dlp)
-RUN pip3 install --break-system-packages --no-cache-dir yt-dlp
+# 4. 安装 Python 依赖 (yt-dlp 和 youtube-transcript-api)
+RUN pip3 install --break-system-packages --no-cache-dir yt-dlp youtube-transcript-api
 
 # 5. 复制源代码
 COPY server.js ./

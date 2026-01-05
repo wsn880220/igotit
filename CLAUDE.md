@@ -66,7 +66,7 @@ The script outputs JSON to stdout with VTT-parsed subtitle data including text, 
 - `src/hooks/useVideoPlayer.js` - Custom hook encapsulating YouTube API interactions
 
 **Backend Core** (`packages/backend/server.js`):
-- `POST /api/subtitles` - Spawns Python process to extract YouTube subtitles via yt-dlp
+- `POST /api/subtitles` - Spawns Python process to extract YouTube subtitles via youtube-transcript-api (no login required)
 - `POST /api/translate` - Word translation with stop-word filtering
 - `POST /api/translate-sentence` - Full sentence translation with LLM caching
 - `POST /api/clear-cache` - Clears translation cache

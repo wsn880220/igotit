@@ -79,10 +79,11 @@ function extractVideoId(url) {
   return null;
 }
 
-// 使用 yt-dlp (Python 脚本) 获取字幕
-async function getSubtitlesWithYtDlp(videoId) {
+// 使用 youtube-transcript-api (Python 脚本) 获取字幕
+// 优势：轻量、支持代理、无需 Cookies 即可访问公共视频
+async function getSubtitles(videoId) {
   try {
-    console.log(`正在使用 yt-dlp 获取视频字幕: ${videoId}`);
+    console.log(`正在获取视频字幕: ${videoId}`);
 
     // 调用 Python 脚本（自动检测 Python 路径，venv 在父目录）
     const pythonCmd = fs.existsSync(path.join(REPO_ROOT, 'venv', 'bin', 'python3'))
@@ -113,7 +114,7 @@ async function getSubtitlesWithYtDlp(videoId) {
       title: result.title || null
     };
   } catch (error) {
-    console.error('yt-dlp 错误:', error.message);
+    console.error('字幕获取错误:', error.message);
     throw error;
   }
 }
@@ -720,7 +721,7 @@ if (process.env.NODE_ENV === 'production') {
 // 启动服务器
 app.listen(PORT, () => {
   console.log(`\n🚀 服务器已启动在 http://localhost:${PORT}`);
-  console.log(`📝 字幕 API (yt-dlp): POST http://localhost:${PORT}/api/subtitles`);
+  console.log('📝 字幕 API (youtube-transcript-api): POST http://localhost:3000/api/subtitles');
   console.log(`🎬 演示 API: POST http://localhost:${PORT}/api/subtitles/demo`);
   console.log(`🔤 翻译 API: POST http://localhost:${PORT}/api/translate`);
   if (process.env.NODE_ENV === 'production') {
