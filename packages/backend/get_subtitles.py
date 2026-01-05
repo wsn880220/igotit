@@ -39,8 +39,12 @@ def get_subtitles(video_id):
             import requests
             session = requests.Session()
             session.proxies = proxies
+            # 添加 User-Agent 伪装
+            session.headers.update({
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            })
             api = YouTubeTranscriptApi(http_client=session)
-            print(f"🌐 使用代理实例化 API", file=sys.stderr)
+            print(f"🌐 使用代理实例化 API (User-Agent: Chrome/91.0)", file=sys.stderr)
         else:
             api = YouTubeTranscriptApi()
 
