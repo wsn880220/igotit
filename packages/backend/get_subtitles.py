@@ -18,6 +18,10 @@ def get_subtitles(video_id):
     proxy_url = os.getenv('PROXY_URL')
     proxies = None
     if proxy_url:
+        # 确保代理 URL 有 scheme (http:// 或 https://)
+        if not proxy_url.startswith('http://') and not proxy_url.startswith('https://'):
+            proxy_url = f'http://{proxy_url}'
+            
         proxies = {
             "http": proxy_url,
             "https": proxy_url
