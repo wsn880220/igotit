@@ -608,6 +608,39 @@ app.get('/api/recent-videos', (req, res) => {
   });
 });
 
+// 调试代理 API (临时)
+app.get('/api/debug-proxy', async (req, res) => {
+  try {
+    const pythonCmd = fs.existsSync(path.join(REPO_ROOT, 'venv', 'bin', 'python3'))
+      ? path.join(REPO_ROOT, 'venv', 'bin', 'python3')
+      : 'python3';
+    const scriptPath = path.join(PROJECT_ROOT, 'debug_proxy.py');
+
+    // 如果没有debug脚本，先创建一个(因为它是新文件可能还没部署通过git?)
+    // 这里为了保险，还是依赖刚才创建的文件。如果git没push上去，那就读不到。
+    // 我们会把 debug_proxy.py 也 git add 上去。
+
+    const command = `${pythonCmd} "${scriptPath}"`;
+
+    const { stdout, stderr } = await execPromise(command, {
+      cwd: REPO_ROOT,
+      timeout: 20000
+    });
+
+    res.json({
+      stdout,
+      stderr
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: '测试失败',
+      details: error.message,
+      stdout: error.stdout,
+      stderr: error.stderr
+    });
+  }
+});
+
 // 获取视频标题
 app.get('/api/video-title', async (req, res) => {
   try {
