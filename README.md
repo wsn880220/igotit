@@ -1,106 +1,76 @@
-# IGotIt - YouTube 字幕学习助手
+# 磨耳朵 (Mo Er Duo)
 
-一个帮助你通过 YouTube 视频学习英语的工具，提供字幕获取、实时翻译和单词查询功能。
+**“告别枯燥背单词，在真实的语境中，找回语言的律动。”**
 
-## ✨ 功能特性
+磨耳朵不仅仅是一个播放器，它是为了让你“听懂”而设计的沉浸式英语学习伴侣。我们砍掉了所有复杂的干扰，只保留了最纯粹的视听交互，让你的每一次点击，都是一次知识的积累。
 
-- 📺 支持 YouTube 视频字幕提取
-- 🔤 实时单词翻译（基于智谱 AI）
-- 📝 句子翻译
-- 🎯 推荐学习视频
+## ✨ 核心亮点
 
-## 🚀 Zeabur 一键部署
+### 1. 指尖上的“点读机”交互
+- **点击即懂**：在视频播放中，遇到不懂的单词？**只需轻轻一点**。视频会自动暂停，精准的释义立即浮现。不再需要切换 APP，不再打断心流，哪里不会点哪里。
+- **语境化记忆**：我们不只给你冷冰冰的字典定义，而是结合当前字幕的上下文，告诉你这个词在**此时此刻**的确切含义。
 
-[![Deploy on Zeabur](https://zeabur.com/button.svg)](https://zeabur.com/templates?repository=https://github.com/wsn880220/igotit)
+### 2. 极简主义的“纸质书”质感
+- **温暖阅读**：摒弃了传统视频网站嘈杂的界面，我们采用了米色护眼背景与衬线字体的排版设计。阅读字幕就像翻阅一本精美的英文杂志，舒适、优雅，久看不累。
+- **沉浸专注**：除了视频和字幕，屏幕上没有任何多余的按钮或推荐干扰。在这里，只有你和英语故事。
 
-**部署步骤：**
-1. 点击上方按钮跳转到 Zeabur
-2. 选择 **GitHub** 部署方式
-3. 选择 `igotit` 仓库
-4. 配置环境变量：
-   - `ZHIPU_API_KEY`: 你的智谱 AI API 密钥（从 https://open.bigmodel.cn/ 获取）
-5. 点击部署
+### 3. 智能跟读与整句解析
+- **长难句克星**：遇到听不懂的长句子？点击**整句翻译**，AI 老师 instantly 为你拆解句意，瞬间扫清理解障碍。
+- **无缝衔接**：查完单词或理解句子后，无需额外操作，视频自动继续。这种丝滑的“暂停-学习-继续”闭环，让你的学习效率倍增。
 
-Zeabur 会自动构建并部署前后端一体的应用。
+### 4. 你的专属学习足迹（即将上线）
+- **默默陪伴**：不需要你手动打卡。系统会自动记录你观看过的每一个视频、点击过的每一个单词。
+- **看着自己变强**：通过直观的数据面板，回顾你“磨”过的每一分钟耳朵，让进步看得见。
 
-## 🛠️ 本地开发
+---
+
+## 🚀 快速开始
 
 ### 前提条件
-
 - Node.js 18+
-- Python 3.8+
+- Python 3.8+ (用于字幕获取)
 - ffmpeg
-- pnpm（推荐）或 npm
 
-### 项目结构
-
-```
-igotit/
-├── packages/
-│   ├── frontend/    # React + Vite 前端
-│   └── backend/     # Express + Python 后端
-```
-
-### 安装依赖
+### 1. 安装依赖
 
 ```bash
-# 使用 pnpm（推荐）
+# 推荐使用 pnpm
 pnpm install
 
 # 或使用 npm
-cd packages/frontend && npm install
-cd ../backend && npm install
+npm install
 ```
 
-### 配置环境变量
+### 2. 配置环境
+
+在 `packages/backend/` 下创建 `.env` 文件：
 
 ```bash
-# 复制环境变量模板
-cp packages/backend/.env.example packages/backend/.env
-
-# 编辑 .env 文件，填入你的 API Key
-ZHIPU_API_KEY=your-api-key-here
+cd packages/backend
+cp .env.example .env
 ```
 
-### 启动开发服务器
+编辑 `.env` 填入必要的 API Key（如 `ZHIPU_AI_API_KEY`）。
+
+### 3. 启动开发
 
 ```bash
-# 启动前端
+# 启动前端 (http://localhost:5173)
 pnpm dev
 
-# 启动后端（新终端）
+# 启动后端 (http://localhost:3000)
 pnpm dev:backend
 ```
-
-访问 http://localhost:5173
 
 ## 🐳 Docker 本地运行
 
 ```bash
-# 使用 Docker Compose 启动前后端
 docker-compose up -d
-
-# 查看日志
-docker-compose logs -f
-
-# 停止服务
-docker-compose down
 ```
 
-访问：
-- 前端：http://localhost:80
-- 后端 API：http://localhost:3000
+访问应用：http://localhost:80
 
-## 🔧 构建生产版本
-
-```bash
-# 构建前端
-pnpm build
-
-# 预览前端构建产物
-cd packages/frontend
-pnpm preview
-```
+---
 
 ## 📄 许可证
 
