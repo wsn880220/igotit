@@ -43,6 +43,10 @@ function App() {
         setError('');
         setVideoUrl(url);
 
+        // 记录开始时间，确保加载提示至少显示800ms
+        const startTime = Date.now();
+        const minDisplayTime = 800;
+
         try {
             console.log(`📡 发起请求: ${API_BASE}/api/subtitles`);
             const response = await fetch(`${API_BASE}/api/subtitles`, {
@@ -87,6 +91,10 @@ function App() {
             setVideoId(null);
             setSubtitles([]);
         } finally {
+            // 确保加载提示至少显示指定时长
+            const elapsedTime = Date.now() - startTime;
+            const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
+            await new Promise(resolve => setTimeout(resolve, remainingTime));
             setIsLoading(false);
         }
     };
@@ -132,6 +140,10 @@ function App() {
         setError('');
         setVideoUrl(`https://www.youtube.com/watch?v=${selectedVideoId}`);
 
+        // 记录开始时间，确保加载提示至少显示800ms
+        const startTime = Date.now();
+        const minDisplayTime = 800;
+
         try {
             const response = await fetch(`${API_BASE}/api/subtitles`, {
                 method: 'POST',
@@ -165,6 +177,10 @@ function App() {
             setVideoId(null);
             setSubtitles([]);
         } finally {
+            // 确保加载提示至少显示指定时长
+            const elapsedTime = Date.now() - startTime;
+            const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
+            await new Promise(resolve => setTimeout(resolve, remainingTime));
             setIsLoading(false);
         }
     };
